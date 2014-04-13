@@ -25,6 +25,20 @@ function start(gl) {
     console.log('Failed to intialize shaders.');
     return;
   }
+  
+  //To do: Dado o pgn variável string do arquvo .pgn carregado do html
+    	//To do: Criar uma fila dos movimentos{tipo peça, posição inicial, posição final, ...}
+            //To do: parser do pgn
+    
+    //To do: Inicializar hashmap dos objetos{chave=posição, valor=objeto}
+      //To do: Carregar bispo
+         //To do: Ler arquivo
+         //To do: Parser
+           //To do: return bispo{tipo de peça, posição}
+      //To do: Caregar cavalo
+      //To do: ...
+      
+   //To do: Carregar tabuleiro
 
   // Set vertex information
   var n = initVertexBuffers(gl);

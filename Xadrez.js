@@ -29,7 +29,7 @@ function readShaderFile(gl, fileName, shader) {
     if (request.readyState === 4 && request.status !== 404) { 
 	onReadShader(gl, request.responseText, shader); 
     }
-  }
+  };
   request.open('GET', fileName, true); // Create a request to acquire the file
   request.send();                      // Send the request
 }
@@ -123,7 +123,7 @@ function start(gl) {
     	// Request that the browser calls tick
     	requestAnimationFrame(tick, canvas);
     };
-    tick()
+    tick();
 }
 
 function initVertexBuffers(gl, program) {
@@ -161,7 +161,7 @@ function readOBJFile(fileName, gl, model, scale, reverse) {
     if (request.readyState === 4 && request.status !== 404) {
       onReadOBJFile(request.responseText, fileName, gl, model, scale, reverse);
     }
-  }
+  };
   request.open('GET', fileName, true); // Create a request to acquire the file
   request.send();                      // Send the request
 }
@@ -260,7 +260,7 @@ var OBJDoc = function(fileName) {
   this.objects = new Array(0);   // Initialize the property for Object
   this.vertices = new Array(0);  // Initialize the property for Vertex
   this.normals = new Array(0);   // Initialize the property for Normal
-}
+};
 
 // Parsing the OBJ file
 OBJDoc.prototype.parse = function(fileString, scale, reverse) {
@@ -295,7 +295,7 @@ OBJDoc.prototype.parse = function(fileString, scale, reverse) {
             mtl.complete = true;
           }
         }
-      }
+      };
       request.open('GET', path, true);  // Create a request to acquire the file
       request.send();                   // Send the request
       continue; // Go to the next line
@@ -324,7 +324,7 @@ OBJDoc.prototype.parse = function(fileString, scale, reverse) {
   }
 
   return true;
-}
+};
 
 OBJDoc.prototype.parseMtllib = function(sp, fileName) {
   // Get directory path
@@ -333,30 +333,30 @@ OBJDoc.prototype.parseMtllib = function(sp, fileName) {
   if(i > 0) dirPath = fileName.substr(0, i+1);
 
   return dirPath + sp.getWord();   // Get path
-}
+};
 
 OBJDoc.prototype.parseObjectName = function(sp) {
   var name = sp.getWord();
   return (new OBJObject(name));
-}
+};
 
 OBJDoc.prototype.parseVertex = function(sp, scale) {
   var x = sp.getFloat() * scale;
   var y = sp.getFloat() * scale;
   var z = sp.getFloat() * scale;
   return (new Vertex(x, y, z));
-}
+};
 
 OBJDoc.prototype.parseNormal = function(sp) {
   var x = sp.getFloat();
   var y = sp.getFloat();
   var z = sp.getFloat();
   return (new Normal(x, y, z));
-}
+};
 
 OBJDoc.prototype.parseUsemtl = function(sp) {
   return sp.getWord();
-}
+};
 
 OBJDoc.prototype.parseFace = function(sp, materialName, vertices, reverse) {  
   var face = new Face(materialName);
@@ -432,7 +432,7 @@ OBJDoc.prototype.parseFace = function(sp, materialName, vertices, reverse) {
   face.numIndices = face.vIndices.length;
 
   return face;
-}
+};
 
 // Analyze the material file
 function onReadMTLFile(fileString, mtl) {
@@ -473,19 +473,19 @@ OBJDoc.prototype.isMTLComplete = function() {
     if(!this.mtls[i].complete) return false;
   }
   return true;
-}
+};
 
 // Find color by material name
 OBJDoc.prototype.findColor = function(name){
   for(var i = 0; i < this.mtls.length; i++){
     for(var j = 0; j < this.mtls[i].materials.length; j++){
       if(this.mtls[i].materials[j].name == name){
-        return(this.mtls[i].materials[j].color)
+        return(this.mtls[i].materials[j].color);
       }
     }
   }
   return(new Color(0.8, 0.8, 0.8, 1));
-}
+};
 
 //------------------------------------------------------------------------------
 // Retrieve the information for drawing 3D model
@@ -541,7 +541,7 @@ OBJDoc.prototype.getDrawingInfo = function() {
   }
 
   return new DrawingInfo(vertices, normals, colors, indices);
-}
+};
 
 //------------------------------------------------------------------------------
 // MTLDoc Object
@@ -549,18 +549,18 @@ OBJDoc.prototype.getDrawingInfo = function() {
 var MTLDoc = function() {
   this.complete = false; // MTL is configured correctly
   this.materials = new Array(0);
-}
+};
 
 MTLDoc.prototype.parseNewmtl = function(sp) {
   return sp.getWord();         // Get name
-}
+};
 
 MTLDoc.prototype.parseRGB = function(sp, name) {
   var r = sp.getFloat();
   var g = sp.getFloat();
   var b = sp.getFloat();
   return (new Material(name, r, g, b, 1));
-}
+};
 
 //------------------------------------------------------------------------------
 // Material Object
@@ -568,7 +568,7 @@ MTLDoc.prototype.parseRGB = function(sp, name) {
 var Material = function(name, r, g, b, a) {
   this.name = name;
   this.color = new Color(r, g, b, a);
-}
+};
 
 //------------------------------------------------------------------------------
 // Vertex Object
@@ -577,7 +577,7 @@ var Vertex = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
-}
+};
 
 //------------------------------------------------------------------------------
 // Normal Object
@@ -586,7 +586,7 @@ var Normal = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
-}
+};
 
 //------------------------------------------------------------------------------
 // Color Object
@@ -596,7 +596,7 @@ var Color = function(r, g, b, a) {
   this.g = g;
   this.b = b;
   this.a = a;
-}
+};
 
 //------------------------------------------------------------------------------
 // OBJObject Object
@@ -605,12 +605,12 @@ var OBJObject = function(name) {
   this.name = name;
   this.faces = new Array(0);
   this.numIndices = 0;
-}
+};
 
 OBJObject.prototype.addFace = function(face) {
   this.faces.push(face);
   this.numIndices += face.numIndices;
-}
+};
 
 //------------------------------------------------------------------------------
 // Face Object
@@ -620,7 +620,7 @@ var Face = function(materialName) {
   if(materialName == null)  this.materialName = "";
   this.vIndices = new Array(0);
   this.nIndices = new Array(0);
-}
+};
 
 //------------------------------------------------------------------------------
 // DrawInfo Object
@@ -630,7 +630,7 @@ var DrawingInfo = function(vertices, normals, colors, indices) {
   this.normals = normals;
   this.colors = colors;
   this.indices = indices;
-}
+};
 
 //------------------------------------------------------------------------------
 // Constructor
@@ -638,12 +638,12 @@ var StringParser = function(str) {
   this.str;   // Store the string specified by the argument
   this.index; // Position in the string to be processed
   this.init(str);
-}
+};
 // Initialize StringParser object
 StringParser.prototype.init = function(str){
   this.str = str;
   this.index = 0;
-}
+};
 
 // Skip delimiters
 StringParser.prototype.skipDelimiters = function()  {
@@ -654,14 +654,14 @@ StringParser.prototype.skipDelimiters = function()  {
     break;
   }
   this.index = i;
-}
+};
 
 // Skip to the next word
 StringParser.prototype.skipToNextWord = function() {
   this.skipDelimiters();
   var n = getWordLength(this.str, this.index);
   this.index += (n + 1);
-}
+};
 
 // Get word
 StringParser.prototype.getWord = function() {
@@ -672,17 +672,17 @@ StringParser.prototype.getWord = function() {
   this.index += (n + 1);
 
   return word;
-}
+};
 
 // Get integer
 StringParser.prototype.getInt = function() {
   return parseInt(this.getWord());
-}
+};
 
 // Get floating number
 StringParser.prototype.getFloat = function() {
   return parseFloat(this.getWord());
-}
+};
 
 // Get the length of word
 function getWordLength(str, start) {

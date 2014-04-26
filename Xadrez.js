@@ -121,7 +121,7 @@ function start(gl) {
     	   //To do: Draw the triangle
     	
     	// Request that the browser calls tick
-    	requestAnimationFrame(tick, canvas);
+    	requestAnimationFrame(tick(), canvas);
     };
     tick();
 }
@@ -686,7 +686,6 @@ StringParser.prototype.getFloat = function() {
 
 // Get the length of word
 function getWordLength(str, start) {
-  var n = 0;
   for(var i = start, len = str.length; i < len; i++){
     var c = str.charAt(i);
     if (c == '\t'|| c == ' ' || c == '(' || c == ')' || c == '"') 

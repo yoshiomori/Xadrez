@@ -8,7 +8,12 @@
   <!-- Pagina de entrada, para carregar pgn do usuàrio -->
   <!-- Rotina de submit -->
 
-  <body onload="main()">
+  <body onload="init()">
+    <div ALIGN=CENTER>
+		<form  name="input" id="form">
+		<label for="file"><font size=14>Escolha um arquivo .PGN </font><br><br></label> 
+		<input type="file" id="file" name="file"/>
+		</form>
     <canvas id="webgl" width="400" height="400">
     Please use a browser that supports "canvas"
     </canvas>

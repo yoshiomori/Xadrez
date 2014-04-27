@@ -4,6 +4,39 @@ var VSHADER_SOURCE = null;
 // Fragment shader program
 var FSHADER_SOURCE = null;
 
+function init() {
+	checkForFileApiSupport();
+	document.getElementById('file').addEventListener('change', handleFileSelect, false);
+}
+
+function checkForFileApiSupport() {
+    if (window.File && window.FileReader && window.FileList && window.Blob) {  
+        // All the File APIs are supported.
+    } 
+    else {  
+    	alert('The File APIs are not fully supported in this browser.');
+    }
+}
+
+function handleFileSelect(evt) {
+	var f = evt.target.files[0];
+	
+	if (!f.type.match('x-chess-pgn.*')) {
+			alert('Only .PGN files');
+	}
+	else{
+		var reader = new FileReader();
+		document.getElementById('form').style.visibility = 'hidden';		
+		reader.onload = function(e) {
+				if (e.target.readyState == FileReader.DONE)  // DONE == 2
+    			alert(reader.result);
+				main();
+		}
+		reader.readAsText(f, "UTF-8");	
+	}
+}
+
+
 function main() {
   // Retrieve <canvas> element
   var canvas = document.getElementById('webgl');

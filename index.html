@@ -1,21 +1,27 @@
 <!DOCTYPE html>
-<html lang="pt">
-  <head>
-    <meta charset="utf-8" />
-    <title>Xadrez 3D</title>
-  </head>
 
-  <!-- Pagina de entrada, para carregar pgn do usuàrio -->
-  <!-- Rotina de submit -->
+<html>
 
-  <body onload="main()">
-    <canvas id="webgl" width="400" height="400">
-    Please use a browser that supports "canvas"
-    </canvas>
-    <script src="./lib/webgl-utils.js"></script>
-    <script src="./lib/webgl-debug.js"></script>
-    <script src="./lib/cuon-utils.js"></script>
-    <script src="./lib/cuon-matrix.js"></script>
-    <script src="Xadrez.js"></script>
-  </body>
+<head>
+<title>Xadrez 3D</title>
+<script type="text/javascript" src="libs/three.js"></script>
+<script type="text/javascript" src="libs/OBJLoader.js"></script>
+
+<script type="text/javascript" src="libs/jquery-1.9.0.js"></script>
+<style>
+body {
+	/* set margin to 0 and overflow to hidden, to go fullscreen */
+	margin: 0;
+	overflow: hidden;
+}
+</style>
+</head>
+<body>
+
+	<!-- Div which will hold the Output -->
+	<div id="WebGL-output"></div>
+
+	<!-- Javascript code that runs Three.js -->
+	<script type="text/javascript" src="Xadrez.js"></script>
+</body>
 </html>

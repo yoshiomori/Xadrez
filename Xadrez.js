@@ -31,10 +31,13 @@ $(function() {
 	$("#WebGL-output").append(webGLRenderer.domElement);
 
 	// TODO: Dado o pgn variável string do arquvo .pgn carregado do html
-	// TODO: Criar uma fila dos movimentos{tipo peça, posição inicial,
-	// posição final, ...}
+	// TODO: Criar uma fila{Classe da peça['b','n','p','q','k','r'], movx[int],movy[int], jogador['b'|'w'], "comeu"[bool], conflx[int], confly[int]}
 	// TODO: parser do pgn
+	
+	// TODO: Criar Tabuleiro
+	// TODO: Carregar tabuleiro
 
+	// TODO: Criar peças do jogo (posição(int int), jogador,status) Funções(in(Classe da peça, movimento)out(peça))
 	// TODO: Inicializar hashmap dos objetos{chave="nome do objeto", valor=objeto}
 	// TODO: Carregar bispo
 	// TODO: Ler arquivo
@@ -50,7 +53,6 @@ $(function() {
 		'bispo': null,
 		'cavalo': null,
 		'peao': null,
-		'rainha': null,
 		'rainha': null,
 		'rei': null,
 		'torre': null

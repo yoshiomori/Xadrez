@@ -11,7 +11,7 @@ $(function() {
 
 	// create a render and set the size
 	var webGLRenderer = new THREE.WebGLRenderer();
-	webGLRenderer.setClearColor(0xaaaaff, 1.0);
+	webGLRenderer.setClearColor(0x888888, 1.0);
 	webGLRenderer.setSize(window.innerWidth, window.innerHeight);
 	webGLRenderer.shadowMapEnabled = true;
 
@@ -55,7 +55,8 @@ $(function() {
 		'peao': null,
 		'rainha': null,
 		'rei': null,
-		'torre': null
+		'torre': null,
+		'tabuleiro': null
 	};
 	
 	var loader = new THREE.OBJLoader();
@@ -190,6 +191,20 @@ $(function() {
 		geometry.position.x = 6;
 		scene.add(geometry);
 	});
+	
+	var loader = new THREE.OBJMTLLoader();
+    loader.addEventListener('load', function (event) {
+
+        var object = event.content;
+
+        object.scale.set(2, 2, 2);
+        object.position.y = -0.5;
+        objects['tabuleiro'] = object;
+        scene.add(objects['tabuleiro']);
+    });
+
+
+    loader.load('objetos/tabuleiro.obj', 'objetos/tabuleiro.mtl', {side: THREE.DoubleSide});
 
 	render();
 	
@@ -210,7 +225,7 @@ $(function() {
 		// Loop para cada peça
 		for(object in objects){
 			if(objects[object]){
-				objects[object].rotation.x += 0.006;
+				//objects[object].rotation.x += 0.006;
 			}
 		}
 

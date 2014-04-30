@@ -1,13 +1,17 @@
+//Simulando uma classe em javascript. 
+//Essa classe conterá os atributos de cada jogada
 function Mov (jog) {
-    this.peca = null;
-    this.movx = 0;
-    this.movy = 0;
-    this.jogador = jog;
-    this.kill = false;
-    this.conflx = 0;
-    this.confly = 0;
+    this.peca = null;   // Peça do movimento
+    this.movx = 0;	    // Movimento coluna (a, b, ..., h)
+    this.movy = 0;		// Movimento linha (1, ..., 8)
+    this.jogador = jog;		// Jogador da jogada (B = preto, W = branco)
+    this.kill = false;		// Se essa jogada haverá captura de peça adversária
+    this.conflx = 0;	// Se houver conflito entre duas peças, qual coluna está a peça que deverá se mover
+    this.confly = 0;	// Se continuar com conflito, qual linha está a peça que deverá se mover
+    this.promotion = null  // Se houver pawn promotion, para que peça se tranformará
 }
 
+// Função que transforma coluna em um inteiro onde (a, b, ..., h) = (1, 2, ..., 8)
 function valorx(coluna){
 	if(coluna === 'a') return 1;
 	else if(coluna === 'b') return 2;
@@ -19,11 +23,14 @@ function valorx(coluna){
 	else 					return 8;
 }
 
+// Função auxiliar que troca de jogador para cada jogada
 function changeJ(jogador){
 	if(jogador == 'W') return 'B';
 	else 			   return 'W';
 }
 
+// Função que forma as jogadas do castling
+// side = kingside ou queenside, jog = B, W
 function castling(side, jog){
 	var movs = [];
 	m1 = new Mov(jog);
@@ -60,10 +67,18 @@ function castling(side, jog){
 	movs.push(m2);
 	return movs;
 }
+
+// função que recebe a jogada e forma um objeto jogada com os atributos corretos
+// Ela lê a jogada codificada de traz para frente e cortando o que já foi codificado
 function obj_mov(acao, jog){
 	var m = new Mov(jog);
 	if(acao[acao.length - 1] == '+' || acao[acao.length - 1] == '#')
 		acao = acao.slice(0, acao.length - 1);
+	
+	if(acao[acao.length - 1] == 'K'|| acao[acao.length - 1] == 'Q' || acao[acao.length - 1] == 'R' || acao[acao.length - 1] == 'B' || acao[acao.length - 1] == 'N'){
+		m.promotion = acao[acao.length - 1];
+		acao = acao.slice(0, acao.length - 2);
+	}
 	
 	m.movy = acao[acao.length - 1];
 	m.movx = valorx(acao[acao.length - 2]);
@@ -106,11 +121,14 @@ function obj_mov(acao, jog){
 	}
 	return m;
 }
+
+// Função que é iniciada no carregamento da página
 function init() {
 	checkForFileApiSupport();
 	document.getElementById('file').addEventListener('change', handleFileSelect, false);
 }
 
+// Verifica se há suporte ao File API
 function checkForFileApiSupport() {
     if (window.File && window.FileReader && window.FileList && window.Blob) {
         // All the File APIs are supported.
@@ -120,19 +138,24 @@ function checkForFileApiSupport() {
     }
 }
 
+// Função que trata o evento de seleção de arquivo
 function handleFileSelect(evt) {
 	var f = evt.target.files[0];
-
+	
+	// Verifica se é um arquivo pgn
 	if (!f.type.match('x-chess-pgn.*')) {
 		alert('Only .PGN files');
 	}
 	else{
 		var reader = new FileReader();
 		document.getElementById("form").style.position = 'absolute';	
-		document.getElementById('form').style.visibility = 'hidden';	
+		document.getElementById('form').style.visibility = 'hidden';
+		// Trata o evento de leitura
 		reader.onload = function(e) {
 		if (e.target.readyState == FileReader.DONE) // DONE == 2
+			// Separa cada linha do texto
 			var str = reader.result.split("\n");
+			// Retira as informações do jogo. O que estão entre [...]
 			for(var i = 0; i < str.length; i++){
 				var bracket = /^(\[)/;
 				var empty_line = /^\s*$/;
@@ -141,11 +164,14 @@ function handleFileSelect(evt) {
 					i--;
 				}
 			}
+			//Variável que guardará todas as "palavras" do texto
 			var al_words = new Array();
 			for(var i = 0; i < str.length; i++){
 				var words = str[i].split(/[" "]+/);
 				var comment1 = /^(\;)/;
 				var comment2 = /^(\{)/;
+				var nalphanum = /(\W)$/;
+				// Retira os comentários. O que há depois de ; ou entre {}
 				for(var j = 0; j < words.length; j++){
 					if(comment1.test(words[j])){
 						words.splice(j, (words.length - j));
@@ -157,42 +183,64 @@ function handleFileSelect(evt) {
 						words.splice(j, (k - j + 1));
 						j--;
 					}
+					else if(words[j][words[j].length - 1] != '+' &&
+							words[j][words[j].length - 1] != '#' &&
+							words[j][words[j].length - 1] != '.' &&
+							nalphanum.test(words[j]))
+						words[j] = words[j].slice(0, words[j].length - 1);					
 				}
 				al_words = al_words.concat(words);
 			}
-			al_words.splice(al_words.length - 1, 1);
+			// Retira a última palavra, pois é o resultado do jogo. Ex: 1-0
+			al_words.splice(al_words.length - 1, 1); 
+			// Vetor que guardará todos os objetos jogadas. Está na ordem 
+			// de jogada, ou seja, o indíce 0 é a primeira jogada, 1 a segunda, etc.
 			var movs = [];
+			// Iniciar o jogador como W(branco), por convenção
 			var jog = 'W';
+			// Para cada palavra, extrai a jogada codificada e a tranforma em um objeto jogada
 			for(var i = 0; i < al_words.length; i++){
+				// Caso a palavra seja o indíce da rodada
 				if(al_words[i].search(/\./) != -1){
+					// Se o arquivo pgn, a primeira jogada da rodada vier junto do indíce. Ex: 2.e5
 					if(al_words[i][al_words[i].length - 1] != '.'){
+						// Separa a do indíce
 						var aux = al_words[i].split(/\./);
+						// Verifica se é uma jogada de castling
 						if(aux[1] == "O-O" || aux[1] == "O-O-O"){
 							var m = castling(aux[i], jog);
 							movs.push(m[0]);
 							movs.push(m[1]);
 						}
+						// Se não, transforma em um objeto jogada
 						else{
 							var m = obj_mov(aux[1], jog);
 							movs.push(m);
 						}
+						// Vez do próximo jogador
 						jog = changeJ(jog);
 					}
 					
 				}
+				// Se não for o indíce da rodada
 				else{
+					// Verifica se é uma jogada de castling
 					if(al_words[i] == "O-O" || al_words[i] == "O-O-O"){
 						var m = castling(al_words[i], jog);
 						movs.push(m[0]);
 						movs.push(m[1]);
 					}
+					// Se não, transforma em um objeto jogada
 					else{
 						var m = obj_mov(al_words[i], jog);
 						movs.push(m);
 					}
+					// Vez do próximo jogador
 					jog = changeJ(jog);
 				}
 			}
+			// Quando todas as jogadas foram traduzidas para o vetor movs, 
+			// chamaremos a função que inicia a parte gráfica
 			main(movs);
 		}
 		reader.readAsText(f, "UTF-8");	
@@ -200,10 +248,11 @@ function handleFileSelect(evt) {
 }
 
 
-function main(movimentos){
-	for(var f = 0; f < movimentos.length; f++){
-		alert(movimentos[f].peca + " " + movimentos[f].movx + " " + movimentos[f].movy + " " +
-				movimentos[f].jogador + " " + movimentos[f].kill + " " + movimentos[f].conflx + " " + movimentos[f].confly);
+function main(plays){
+	// Teste
+	for(var f = 0; f < plays.length; f++){
+		alert(plays[f].peca + " " + plays[f].movx + " " + plays[f].movy + " " +
+				plays[f].jogador + " " + plays[f].kill + " " + plays[f].conflx + " " + plays[f].confly + plays[f].promotion);
 	} 
 	// once everything is loaded, we run our Three.js stuff.
 

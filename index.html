@@ -2,6 +2,7 @@
 
 <html>
 <head>
+<meta charset="utf-8" />
 <title>Xadrez 3D</title>
 <script type="text/javascript" src="libs/three.js"></script>
 <script type="text/javascript" src="libs/OBJLoader.js"></script>
@@ -10,14 +11,20 @@
 <script type="text/javascript" src="libs/jquery-1.9.0.js"></script>
 <style>
 body {
+	
 	/* set margin to 0 and overflow to hidden, to go fullscreen */
 	margin: 0;
 	overflow: hidden;
 }
 </style>
 </head>
-<body>
-
+<body onload="init()">
+	<div ALIGN=CENTER>
+		<form name="input" id="form">
+		<label for="file"><font size=14>Escolha um arquivo .PGN </font><br><br></label>
+		<input type="file" id="file" name="file"/>
+		</form>
+	</div>
 	<!-- Div which will hold the Output -->
 	<div id="WebGL-output"></div>
 

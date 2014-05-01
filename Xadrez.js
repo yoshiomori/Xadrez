@@ -249,6 +249,8 @@ function handleFileSelect(evt) {
 
 
 function main(plays){
+	var clock = new THREE.Clock();
+	
 	// Teste
 	for(var f = 0; f < plays.length; f++){
 		alert(plays[f].peca + " " + plays[f].movx + " " + plays[f].movy + " " +
@@ -275,6 +277,16 @@ function main(plays){
 	camera.position.y = 40;
 	camera.position.z = 50;
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
+	
+	var trackballControls = new THREE.TrackballControls(camera);
+	
+	trackballControls.rotateSpeed = 1.0;
+    trackballControls.zoomSpeed = 1.0;
+    trackballControls.panSpeed = 1.0;
+//    trackballControls.noZoom=false;
+//    trackballControls.noPan=false;
+    trackballControls.staticMoving = true;
+//    trackballControls.dynamicDampingFactor=0.3;
 
 	// add spotlight for the shadows
 	var spotLight = new THREE.SpotLight(0xffffff);
@@ -468,6 +480,8 @@ function main(plays){
 		// TODO: Update Args das operações
 
 		// TODO:Ler evento de movimenTODO mouse
+		var delta = clock.getDelta();
+		trackballControls.update(delta);
 
 		// TODO: Atualizar argumento de Rotação
 

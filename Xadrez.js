@@ -453,7 +453,6 @@ function main(plays){
         var object = event.content;
 
         object.scale.set(2, 2, 2);
-        object.position.y = -0.5;
         objects['tabuleiro'] = object;
         scene.add(objects['tabuleiro']);
     });

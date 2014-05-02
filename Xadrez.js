@@ -1,13 +1,11 @@
 //Simulando uma classe em javascript. 
 //Essa classe conterá os atributos de cada jogada
 function Mov (jog) {
-    this.peca = null;   // Peça do movimento
-    this.movx = 0;	    // Movimento coluna (a, b, ..., h)
-    this.movy = 0;		// Movimento linha (1, ..., 8)
+    this.x_init = 0;	    // Movimento coluna (a, b, ..., h)
+    this.y_init = 0;		// Movimento linha (1, ..., 8)
     this.jogador = jog;		// Jogador da jogada (B = preto, W = branco)
-    this.kill = false;		// Se essa jogada haverá captura de peça adversária
-    this.conflx = 0;	// Se houver conflito entre duas peças, qual coluna está a peça que deverá se mover
-    this.confly = 0;	// Se continuar com conflito, qual linha está a peça que deverá se mover
+    this.x_fim = 0;	// Se houver conflito entre duas peças, qual coluna está a peça que deverá se mover
+    this.y_fim = 0;	// Se continuar com conflito, qual linha está a peça que deverá se mover
     this.promotion = null  // Se houver pawn promotion, para que peça se tranformará
 }
 
@@ -29,98 +27,154 @@ function changeJ(jogador){
 	else 			   return 'W';
 }
 
-// Função que forma as jogadas do castling
-// side = kingside ou queenside, jog = B, W
-function castling(side, jog){
-	var movs = [];
-	m1 = new Mov(jog);
-	m1.peca = 'K';
-	m2 = new Mov(jog);
-	m2.peca = 'R';
-	if(side == "O-O"){
-		m1.movx = valorx('g');
-		m2.movx = valorx('f');
-		m2.conflx = valorx('h');	
-		if(jog == 'W'){
-			m1.movy = 1;
-			m2.movy = 1;
-		}
-		else{
-			m1.movy = 8;
-			m2.movy = 8;
-		}
-	}
-	else{
-		m1.movx = valorx('c');
-		m2.movx = valorx('d');
-		m2.conflx = valorx('a');	
-		if(jog == 'W'){
-			m1.movy = 1;
-			m2.movy = 1;
-		}
-		else{
-			m1.movy = 8;
-			m2.movy = 8;
-		}
-	}
-	movs.push(m1);
-	movs.push(m2);
-	return movs;
-}
-
 // função que recebe a jogada e forma um objeto jogada com os atributos corretos
 // Ela lê a jogada codificada de traz para frente e cortando o que já foi codificado
 function obj_mov(acao, jog){
 	var m = new Mov(jog);
-	if(acao[acao.length - 1] == '+' || acao[acao.length - 1] == '#')
-		acao = acao.slice(0, acao.length - 1);
+	var movs = acao.split("-");
+	m.x_init = valorx(movs[0][0]);
+	m.y_init = movs[0][1];
 	
-	if(acao[acao.length - 1] == 'K'|| acao[acao.length - 1] == 'Q' || acao[acao.length - 1] == 'R' || acao[acao.length - 1] == 'B' || acao[acao.length - 1] == 'N'){
-		m.promotion = acao[acao.length - 1];
-		acao = acao.slice(0, acao.length - 2);
-	}
-	
-	m.movy = acao[acao.length - 1];
-	m.movx = valorx(acao[acao.length - 2]);
-	acao = acao.slice(0, acao.length - 2);
-	
-	if(acao.length <= 0) 
-		m.peca = 'P';
-	else{
-		if(acao[acao.length - 1] == 'x'){
-			m.kill = true;
-			acao = acao.slice(0, acao.length - 1);
-		}
-		
-		if(acao.length <= 0) 
-			m.peca = 'P';
-		else if(acao.length == 1){
-			if(acao[0] == 'K'|| acao[0] == 'Q' || acao[0] == 'R' || acao[0] == 'B' || acao[0] == 'N')
-				m.peca = acao[0];
-			else{
-				m.peca = 'P';
-				m.conflx = valorx(acao);
-			}
-		}
-		else if(acao.length == 2){
-			if(acao[0] == 'K'|| acao[0] == 'Q' || acao[0] == 'R' || acao[0] == 'B' || acao[0] == 'N'){
-				m.peca = acao[0];
-				m.conflx = valorx(acao[1]);
-			}
-			else{
-				m.peca = 'P';
-				m.conflx = valorx(acao[0]);
-				m.confly = acao[1];
-			}
-		}
+	if(movs[1].length == 3){
+		if(movs[1][2] == '+' || movs[1][2] == '#')
+			movs[1] = movs[1].slice(0, 2);	
 		else{
-			m.peca = acao[0];
-			m.conflx = valorx(acao[1]);
-			m.confly = acao[2];
+			m.promotion = movs[1][2];
+			movs[1] = movs[1].slice(0, 2);	
 		}
 	}
+	
+	m.x_fim = valorx(movs[1][0]);
+	m.y_fim = movs[1][1];
 	return m;
 }
+
+//Essa classe conterá os atributos de cada peca do jogo
+function Peca(jog){
+	this.id = null;
+	this.jogador = jog;
+	this.px_init = 0;
+	this.py_init = 0;
+	this.px_fim = 0;
+	this.py_fim = 0;
+	this.morto = false;
+}
+
+// Função que inicia as peças com seus respectivos lugares iniciais
+function iniciaPecas(jog){
+	var pecas = [];
+	// Para os peões
+	for(var i = 1; i <= 8 ; i++){
+		var p = new Peca(jog);
+		p.id = 'P';
+		p.px_init = i; 
+		if(jog = 'W')
+			p.py_init = 2;
+		else
+			p.py_init = 7;
+		p.px_fim = p.px_init;
+		p.py_fim = p.py_init;
+		pecas.push(p);
+	}
+	
+	// Para as restantes:
+	// Foi feito dessa maneira para que as peças iguais sejam adjacentes no vetor
+	for(var i = 1; i <= 8 ; i++){
+		var p = new Peca(jog);
+		p.px_init = i; 
+		if(jog = 'W')
+			p.py_init = 1;
+		else
+			p.py_init = 8;
+		p.px_fim = p.px_init;
+		p.py_fim = p.py_init;
+		pecas.push(p);
+	}
+	// Denominando o id para cada peça
+	pecas[8].id = 'R';  pecas[15].id = 'R';
+	pecas[9].id = 'N';  pecas[14].id = 'N';
+	pecas[10].id = 'B'; pecas[13].id = 'B';
+	pecas[11].id = 'Q'; pecas[12].id = 'K';
+	return pecas;
+}
+
+function kill(pecas, play){
+	for(var i = 0; i < pecas.length; i++){
+		// Para que não faça a animação da rodada anterior
+		pecas[i].px_init = pecas[i].px_fim;
+		pecas[i].py_init = pecas[i].py_fim;
+	}
+	// en passant
+	for(var i = 0; i < pecas.length; i++){
+		if(pecas[i].id == 'P' && pecas[i].jogador = 'W' &&
+				pecas[i].py_fim == 4 && (play.x_init == pecas[i].px_fim - 1 ||
+				play.x_init == pecas[i].px_fim + 1) && play.py_init == 4 &&
+				play.x_fim == pecas[i].px_fim && play.y_fim == 3){
+			pecas[i].morto = true;
+			return pecas;
+		}
+		else if(pecas[i].id == 'P' && pecas[i].jogador = 'B' &&
+				pecas[i].py_fim == 5 && (play.x_init == pecas[i].px_fim - 1 ||
+				play.x_init == pecas[i].px_fim + 1) && play.py_init == 5 &&
+				play.x_fim == pecas[i].px_fim && play.y_fim == 6){
+			pecas[i].morto = true;
+			return pecas;
+		}
+	}
+	for(var i = 0; i < pecas.length; i++){
+		if(pecas[i].px_fim == play.x_fim && pecas[i].py_fim == play.y_fim){
+			pecas[i].morto = true;
+			break;
+		}
+	}
+	return pecas;
+}
+
+// Função que realiza o movimento e retorna as peças atuaizadas
+function mover(pecas, play){
+	for(var i = 0; i < pecas.length; i++){
+		// Se houve captura na jogada passada, retira a peça
+		if(pecas[i].killed){
+			pecas = pecas.splice(i, 1);
+			i--;
+		}
+		// Atualiza a posição anterior pela atual
+	}
+	// Verifica qual peça a ser mudada e atualiza as posições
+	for(var i = 0; i < pecas.length; i++){
+		if(pecas[i].px_init == play.x_init && pecas[i].py_init == play.y_init){
+			// Pawn promotion
+			if(play.promotion != null)
+				pecas[i].id = pay.promotion;
+			// Kingside castling
+			else if((play.x_init == 5 && play.y_init == 8 &&
+					play.x_fim == 7 && play.y_fim == 8) ||
+					(play.x_init == 5 && play.y_init == 1 &&
+					play.x_fim == 7 && play.y_fim == 1)){
+	
+				for(var j = 0; !(pecas[j].px_init == 8 && 
+				pecas[j].py_init == play.y_init); j++);
+				pecas[j].px_fim == 6;
+				pecas[i].py_fim == play.y_fim;
+			}
+			// Queenside castling
+			else if((play.x_init == 5 && play.y_init == 8 &&
+					play.x_fim == 3 && play.y_fim == 8) ||
+					(play.x_init == 5 && play.y_init == 1 &&
+					play.x_fim == 3 && play.y_fim == 1)){
+				for(var j = 0; !(pecas[j].px_init == 1 && 
+				pecas[j].py_init == play.y_init); j++);
+				pecas[j].px_fim == 4;
+				pecas[i].py_fim == play.y_fim;
+			}
+			pecas[i].px_fim == play.x_fim;
+			pecas[i].py_fim == play.y_fim;
+			break;
+		}
+	}
+	return pecas;
+}
+
 
 // Função que é iniciada no carregamento da página
 function init() {
@@ -166,28 +220,48 @@ function handleFileSelect(evt) {
 			}
 			//Variável que guardará todas as "palavras" do texto
 			var al_words = new Array();
+			var comment_nextline = false;
 			for(var i = 0; i < str.length; i++){
 				var words = str[i].split(/[" "]+/);
 				var comment1 = /^(\;)/;
 				var comment2 = /^(\{)/;
+				var comment3 = /(\})$/;
 				var nalphanum = /(\W)$/;
 				// Retira os comentários. O que há depois de ; ou entre {}
 				for(var j = 0; j < words.length; j++){
-					if(comment1.test(words[j])){
-						words.splice(j, (words.length - j));
-						break;
-					}
-					if(comment2.test(words[j])){
-						comment3 = /(\})$/;
-						for(var k = j + 1; !comment3.test(words[k]); k++);
-						words.splice(j, (k - j + 1));
+					if(comment_nextline){
+						comment_nextline = false;
+						for(var k = 0; !comment3.test(words[k]); k++){
+							if(k == (words.length - 1)){
+								comment_nextline = true;
+								break;
+							}
+						}
+						words.splice(0, (k + 1));
 						j--;
 					}
-					else if(words[j][words[j].length - 1] != '+' &&
-							words[j][words[j].length - 1] != '#' &&
-							words[j][words[j].length - 1] != '.' &&
-							nalphanum.test(words[j]))
-						words[j] = words[j].slice(0, words[j].length - 1);					
+					else{
+						if(comment1.test(words[j])){
+							words.splice(j, (words.length - j));
+							break;
+						}
+						if(comment2.test(words[j])){
+							for(var k = j; !comment3.test(words[k]); k++){
+								if(k == (words.length - 1)){
+									comment_nextline = true;
+									break;
+								}
+							}
+							words.splice(j, (k - j + 1));
+							j--;
+						}
+						else if(words[j][words[j].length - 1] != '+' &&
+								words[j][words[j].length - 1] != '#' &&
+								words[j][words[j].length - 1] != '.' &&
+								words[j][words[j].length - 1] != '-' &&
+								nalphanum.test(words[j]))
+							words[j] = words[j].slice(0, words[j].length - 1);
+					}
 				}
 				al_words = al_words.concat(words);
 			}
@@ -206,35 +280,16 @@ function handleFileSelect(evt) {
 					if(al_words[i][al_words[i].length - 1] != '.'){
 						// Separa a do indíce
 						var aux = al_words[i].split(/\./);
-						// Verifica se é uma jogada de castling
-						if(aux[1] == "O-O" || aux[1] == "O-O-O"){
-							var m = castling(aux[i], jog);
-							movs.push(m[0]);
-							movs.push(m[1]);
-						}
-						// Se não, transforma em um objeto jogada
-						else{
-							var m = obj_mov(aux[1], jog);
-							movs.push(m);
-						}
+						var m = obj_mov(aux[1], jog);
+						movs.push(m);
 						// Vez do próximo jogador
 						jog = changeJ(jog);
 					}
-					
 				}
 				// Se não for o indíce da rodada
 				else{
-					// Verifica se é uma jogada de castling
-					if(al_words[i] == "O-O" || al_words[i] == "O-O-O"){
-						var m = castling(al_words[i], jog);
-						movs.push(m[0]);
-						movs.push(m[1]);
-					}
-					// Se não, transforma em um objeto jogada
-					else{
-						var m = obj_mov(al_words[i], jog);
-						movs.push(m);
-					}
+					var m = obj_mov(al_words[i], jog);
+					movs.push(m);
 					// Vez do próximo jogador
 					jog = changeJ(jog);
 				}
@@ -251,11 +306,38 @@ function handleFileSelect(evt) {
 function main(plays){
 	var clock = new THREE.Clock();
 	
-	// Teste
-	for(var f = 0; f < plays.length; f++){
-		alert(plays[f].peca + " " + plays[f].movx + " " + plays[f].movy + " " +
-				plays[f].jogador + " " + plays[f].kill + " " + plays[f].conflx + " " + plays[f].confly + plays[f].promotion);
-	} 
+	//Teste
+	/*for(var f = 0; f < plays.length; f++){
+		alert(plays[f].x_init + " " + plays[f].y_init  + " " +
+		plays[f].jogador + " " + plays[f].x_fim  + " " + plays[f].y_fim + " " + plays[f].promotion);
+	}*/
+	var tab = [["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"],
+	           ["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"],
+	           ["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"],
+	           ["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"]];
+	var print = tab;
+	var pecasW = [];
+	var pecasB = [];
+	pecasW = iniciaPecas('W');
+	pecasB = iniciaPecas('B');
+	for(var i = 0; i < plays.length; i++){
+		print = tab;
+		if(plays[i].jogador == 'W'){
+			pecasW = mover(pecasW, plays[i]);
+		//	pecasB = kill(pecasB, plays[i]);
+		}
+		else{
+			//pecasW = kill(pecasW, plays[i]);
+			pecasB = mover(pecasB, plays[i]);
+		}
+		for(var j = 0; j < pecasW.length; j++)
+			print[pecasW[j].py_fim - 1][pecasW[j].px_fim - 1] = pecasW[j].id;
+		for(var l = 0; l < pecasB.length; l++)
+			print[pecasB[l].py_fim - 1][pecasB[l].px_fim - 1] = pecasB[l].id;
+		alert(print.join('\n'));
+	}
+
+	// Fim dos testes
 	// once everything is loaded, we run our Three.js stuff.
 
 	// create a scene, that will hold all our elements such as objects, cameras

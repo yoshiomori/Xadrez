@@ -1,3 +1,10 @@
+var peao = false;
+var torre = false;
+var cavalo = false;
+var bispo = false;
+var rainha = false;
+var rei = false;
+
 //Simulando uma classe em javascript. 
 //Essa classe conterá os atributos de cada jogada
 function Mov (jog) {
@@ -384,22 +391,26 @@ function main(plays){
 	var pieces = new Array();
 	// Pega a peça do tipo type que está na posição positionx e positionz
 	pieces.get_piece = function(positionx, positionz){
+		positionx = - 14 + 4 * (positionx - 1);
+		positionz = 14 - 4 * (positionz - 1);
 		list = this.filter(function(item, index, array){
 			return (item.position.x == positionx && item.position.z == positionz);
 		});
 		if(list.length == 1){
 			return list.pop();
 		}
-		alert('Erro no arquivo pgn');
+		if(list.length > 1) alert('Erro, mais de uma peça na mesma posição.');
+		else if(!list.length) alert('Erro no arquivo pgn');
+		else alert('Erro inesperado.');
 		return;
 	};
 	var type = {
-			'bispo':null,
-			'cavalo':null,
-			'peao':null,
-			'rainha':null,
-			'rei':null,
-			'torre':null
+			'B':null,
+			'N':null,
+			'P':null,
+			'Q':null,
+			'K':null,
+			'R':null
 	};
 	type.white = new THREE.MeshLambertMaterial({
 		color : 0xffffff
@@ -413,26 +424,26 @@ function main(plays){
 		geometry.children.forEach(function(child) {
 			if (child.children.length == 1) {
 				if (child.children[0] instanceof THREE.Mesh) {
-					if(cor == "branco"){
+					if(cor == "W"){
 						child.children[0].material = type.white;
-						if(tipo == 'cavalo') geometry.rotation.y = - Math.PI / 2;
-						if(tipo == 'bispo') geometry.rotation.y = Math.PI / 2;
+						if(tipo == 'N') geometry.rotation.y = - Math.PI / 2;
+						if(tipo == 'B') geometry.rotation.y = Math.PI / 2;
 					}
 					else{
 						child.children[0].material = type.black;
-						if(tipo == 'cavalo') geometry.rotation.y = - Math.PI * 3 / 2;
-						if(tipo == 'bispo') geometry.rotation.y = Math.PI * 3 / 2;
+						if(tipo == 'N') geometry.rotation.y = - Math.PI * 3 / 2;
+						if(tipo == 'B') geometry.rotation.y = Math.PI * 3 / 2;
 					}
 				}
 			}
 		});
-		if(cor == "branco"){
-			if(tipo == 'cavalo') geometry.rotation.y = - Math.PI / 2;
-			if(tipo == 'bispo') geometry.rotation.y = Math.PI / 2;
+		if(cor == "W"){
+			if(tipo == 'N') geometry.rotation.y = - Math.PI / 2;
+			if(tipo == 'B') geometry.rotation.y = Math.PI / 2;
 		}
 		else{
-			if(tipo == 'cavalo') geometry.rotation.y = - Math.PI * 3 / 2;
-			if(tipo == 'bispo') geometry.rotation.y = Math.PI * 3 / 2;
+			if(tipo == 'N') geometry.rotation.y = - Math.PI * 3 / 2;
+			if(tipo == 'B') geometry.rotation.y = Math.PI * 3 / 2;
 		}
 		return geometry;
 	};
@@ -441,74 +452,80 @@ function main(plays){
 	var loader = new THREE.OBJLoader();
 	loader.load('objetos/bispo.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
-		geometry.name = "bispo";
-		type['bispo'] = geometry;
+		geometry.name = "B";
+		type['B'] = geometry;
 
 		// Jogador Branco
 		// Peça 1
-		geometry = type.nova_peça('bispo', 'branco');
+		geometry = type.nova_peça('B', 'W');
 		geometry.position.set(-6,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
-		geometry = type.nova_peça('bispo', 'branco');
+		geometry = type.nova_peça('B', 'W');
 		geometry.position.set(6,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 
 		// Jogador Preto
 		// Peça 1
-		geometry = type.nova_peça('bispo', 'preto');
+		geometry = type.nova_peça('B', 'B');
 		geometry.position.set(-6,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
-		geometry = type.nova_peça('bispo', 'preto');
+		geometry = type.nova_peça('B', 'B');
 		geometry.position.set(6,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
+		
+		// Arquivo e peças carregadas
+		bispo = true;
 	});
 
 	// Carregando Cavalo
 	loader.load('objetos/cavalo.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
-		geometry.name = "cavalo";
-		type['cavalo'] = geometry;
+		geometry.name = "N";
+		type['N'] = geometry;
 
 		// Jogador Branco
 		// Peça 1
-		geometry = type.nova_peça('cavalo', 'branco');
+		geometry = type.nova_peça('N', 'W');
 		geometry.position.set(-10,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
-		geometry = type.nova_peça('cavalo', 'branco');
+		geometry = type.nova_peça('N', 'W');
 		geometry.position.set(10,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 
 		// Jogador Preto
 		// Peça 1
-		geometry = type.nova_peça('cavalo', 'preto');
+		geometry = type.nova_peça('N', 'B');
 		geometry.position.set(-10,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
-		geometry = type.nova_peça('cavalo', 'preto');
+		geometry = type.nova_peça('N', 'B');
 		geometry.position.set(10,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
+		
+		// Arquivo e peças carregadas
+		cavalo = true;
 	});
 
 	// Carregando Peao
 	loader.load('objetos/peao.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
-		geometry.name = "peao";
-		type['peao'] = geometry;
+		geometry.name = "P";
+		type['P'] = geometry;
 
 		// Jogador Branco
 		for(var i = 0; i < 8; i++){
-			geometry = type.nova_peça('peao', 'branco');
+			geometry = type.nova_peça('P', 'W');
 			geometry.position.set(-14 + i*4, 0, 10);
 			pieces.push(geometry);
 			scene.add(geometry);
@@ -516,84 +533,96 @@ function main(plays){
 
 		// Jogador Preto
 		for(var i = 0; i < 8; i++){
-			geometry = type.nova_peça('peao', 'preto');
+			geometry = type.nova_peça('P', 'B');
 			geometry.position.set(-14 + i*4, 0, -10);
 			pieces.push(geometry);
 			scene.add(geometry);
 		}
+		
+		// Arquivo e peças carregadas
+		peao = true;
 	});
 
 	// Carregando Rainha
 	loader.load('objetos/rainha.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
-		geometry.name = "rainha";
-		type['rainha'] = geometry;
+		geometry.name = "Q";
+		type['Q'] = geometry;
 
 		// Jogador Branco
-		geometry = type.nova_peça('rainha', 'branco');
-		geometry.scale.set(5, 5, 5);
-		geometry.position.set(2,0,14);
-		pieces.push(geometry);
-		scene.add(geometry);
-
-		// Jogador preto
-		geometry = type.nova_peça('rainha', 'preto');
-		geometry.scale.set(5, 5, 5);
-		geometry.position.set(-2,0,-14);
-		pieces.push(geometry);
-		scene.add(geometry);
-	});
-
-	// Carregando Rei
-	loader.load('objetos/rei.obj', function(geometry) {
-		geometry.scale.set(5, 5, 5);
-		geometry.name = "rei";
-		type['rei'] = geometry;
-
-		// Jogador Branco
-		geometry = type.nova_peça('rei', 'branco');
+		geometry = type.nova_peça('Q', 'W');
 		geometry.scale.set(5, 5, 5);
 		geometry.position.set(-2,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 
 		// Jogador preto
-		geometry = type.nova_peça('rei', 'preto');
+		geometry = type.nova_peça('Q', 'B');
+		geometry.scale.set(5, 5, 5);
+		geometry.position.set(-2,0,-14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		
+		// Arquivo e peças carregadas
+		rainha = true;
+	});
+
+	// Carregando Rei
+	loader.load('objetos/rei.obj', function(geometry) {
+		geometry.scale.set(5, 5, 5);
+		geometry.name = "K";
+		type['K'] = geometry;
+
+		// Jogador Branco
+		geometry = type.nova_peça('K', 'W');
+		geometry.scale.set(5, 5, 5);
+		geometry.position.set(2,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+
+		// Jogador preto
+		geometry = type.nova_peça('K', 'B');
 		geometry.scale.set(5, 5, 5);
 		geometry.position.set(2,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
+		
+		// Arquivo e peças carregadas
+		rei = true;
 	});
 
 	// Carregando Torre
 	loader.load('objetos/torre.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
-		geometry.name = "torre";
-		type['torre'] = geometry;
+		geometry.name = "R";
+		type['R'] = geometry;
 
 		// Jogador Branco
 		// Peça 1
-		geometry = type.nova_peça('torre', 'branco');
+		geometry = type.nova_peça('R', 'W');
 		geometry.position.set(-14,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
-		geometry = type.nova_peça('torre', 'branco');
+		geometry = type.nova_peça('R', 'W');
 		geometry.position.set(14,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 
 		// Jogador Preto
 		// Peça 1
-		geometry = type.nova_peça('torre', 'preto');
+		geometry = type.nova_peça('R', 'B');
 		geometry.position.set(-14,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
-		geometry = type.nova_peça('torre', 'preto');
+		geometry = type.nova_peça('R', 'B');
 		geometry.position.set(14,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
+		
+		// Arquivo e peças carregadas
+		torre = true;
 	});
 
 	// Carregando Tabuleiro
@@ -607,7 +636,10 @@ function main(plays){
 
 
 	function Motion(object, x, z){ // Objeto, destino(x,z)
+		x = - 14 + 4 * (x - 1);
+		z = 14 - 4 * (z - 1);
 		this.object = object;
+		this.object.position
 		this.dx = (x - object.position.x)/60; // Velocidade(dx,dy,dz)
 		this.dy = 8/60;
 		this.dz = (z - object.position.z)/60;
@@ -652,12 +684,15 @@ function main(plays){
 			break;
 			}
 		};
+		this.done = function(){
+			return (this.stage == 4);
+		};
 	}
 	var motion;
 	var motion_list = new Array();
 	motion_list.done = function(){
 		return this.every(function(item, index, array){
-			return (item.stage == 4);
+			return item.done();
 		});
 	};
 	motion_list.move = function(){
@@ -674,18 +709,20 @@ function main(plays){
 	var i = 0;
 	var t = true;
 	var move_list = new Array();
-	var move_list_aux = new Array();
 	render();
+	var count = 1;
+	
+	console.log(motion_list.done());
 
 	function render() {
+		// Jogo começa depois de todas as peças carregadas
+		if(bispo && torre && cavalo && peao && rainha && rei){
 
 		// Ler evento de movimento do mouse
 		var delta = clock.getDelta();
 		trackballControls.update(delta);
 
-		if(t){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
-			move_list.push(move_list_aux);
-			move_list_aux.length = 0;
+		if(motion_list.done()){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
 			if(i < plays.length){
 				if(plays[i].jogador == 'W'){
 					pecasW = mover(pecasW, plays[i]);
@@ -695,77 +732,42 @@ function main(plays){
 					pecasW = kill(pecasW, plays[i]);
 					pecasB = mover(pecasB, plays[i]);
 				}
+				console.log(pecasW);
+				console.log(pecasB);
 				move_list = pecasW.concat(pecasB);
 				i++;
 			}
 			// Atualizar argumento da posição
-			move_list = move_list.filter(function(item, index, array){
-				return (item.mod);
-			});
+			//move_list = move_list.filter(function(item, index, array){
+			//	return (item.mod);
+			//});
 			t = false;
 		}
-		// Jogo começa depois de todas as peças carregadas
-		if(type['bispo'] && type['torre'] && type['cavalo'] && type['peao'] && type['rainha'] && type['rei']){
 			// Percorre a lista de movimentos fazendo as configurações correspondentes
 			while(move_list.length){
-				console.log(move_list.length);
+				console.log(count++);
 				// Pega a peça que se movimentou
 				move = move_list.pop();
-				move_list_aux.push(move);
-				move.mod = false;
-				// Ajustando ids
-				switch (move.id){
-				case 'P':
-					move.id = 'peao';
-					break;
-				case 'R':
-					move.id = 'torre';
-					break;
-				case 'N':
-					move.id = 'cavalo';
-					break;
-				case 'B':
-					move.id = 'bispo';
-					break;
-				case 'Q':
-					move.id = 'rainha';
-					break;
-				case 'K':
-					move.id = 'rei';
-					break;
-				}
 				console.log(move);
-				// Ajusta as coordenadas
-				move.px_init = - 14 + 4 * (move.px_init - 1);
-				move.py_init = 14 - 4 * (move.py_init - 1);
-				move.px_fim = - 14 + 4 * (move.px_fim - 1);
-				move.py_fim = 14 - 4 * (move.py_fim - 1);
-				console.log(move.px_init);
-				console.log(move.py_init);
-				console.log(move.px_fim);
-				console.log(move.py_fim);
+				move.mod = false;
 				// Pega a imagem correspondente à peça
 				object = pieces.get_piece(move.px_init, move.py_init);
 				// Caso Peça se Moveu
 				if(move.px_init != move.px_fim || move.py_init != move.py_fim){
+					console.log("Move");
 					motion = new Motion(object, move.px_fim, move.py_fim);
 					motion.stage = 0;
 					motion_list.push(motion);
 				}
 				// Caso Peça morreu
 				else if(move.morto){
+					console.log("Morreu");
 					scene.remove(object);
 					pieces.splice(pieces.indexOf(object),1);
 				}
 				// Caso Peça se transformou
-				else {
-					// Ajustando atributos
-					if(move.jogador == 'B'){
-						move.jogador = "branco";
-					}
-					else{
-						move.jogador = "preto";
-					}
+				else if(object.name != move.id) {
+					console.log("Transformou");
 					pieces.splice(pieces.indexOf(object),1);
 					scene.remove(object);
 					var geometry = type.nova_peça(move.id, move.jogador);
@@ -776,11 +778,12 @@ function main(plays){
 					pieces.push(geometry);
 					scene.add(geometry);
 				}
+				else {
+					console.log("Não mudou");
+				}
 			}
-			if(motion_list.done()){
-				motion_list.length = 0;
-				t = true;
-			}
+			// Se o movimento não terminou continue o movimento
+			if(motion_list.done()) motion_list.length = 0;
 			else motion_list.move();
 		}
 		// render using requestAnimationFrame

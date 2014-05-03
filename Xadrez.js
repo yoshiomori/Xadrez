@@ -40,7 +40,7 @@ function obj_mov(acao, jog){
 	// Caso tenha um caracter, será um movimento de pawn promotion
 	if(movs[1].length == 3){
 		if(movs[1][2] == '+' || movs[1][2] == '#')
-			movs[1] = movs[1].slice(0, 2);	
+			movs[1] = movs[1].slice(0, 2);
 		else{
 			m.promotion = movs[1][2];
 			movs[1] = movs[1].slice(0, 2);	
@@ -50,7 +50,6 @@ function obj_mov(acao, jog){
 	m.y_fim = movs[1][1];
 	return m;
 }
-
 //Essa classe conterá os atributos de cada peca do jogo
 function Peca(jog){
 	this.id = null;   // Id da peça = {P, K, N, Q, B, R}
@@ -232,10 +231,10 @@ function handleFileSelect(evt) {
 			for(var i = 0; i < str.length; i++){
 				var bracket = /^(\[)/;
 					var empty_line = /^\s*$/;
-					if(bracket.test(str[i]) || empty_line.test(str[i])){
-						str.splice(i,1);
-						i--;
-					}
+				if(bracket.test(str[i]) || empty_line.test(str[i])){
+					str.splice(i,1);
+					i--;
+				}
 			}
 			//Variável que guardará todas as "palavras" do texto e
 			// retirará as palavras dos comentários, assim como espaços em branco
@@ -425,18 +424,21 @@ function main(plays){
 	// TODO: Carregar tabuleiro
 
 	// TODO: Criar peças do jogo (posição(int int), jogador,status) Funções(in(Classe da peça, movimento)out(peça))
-	// TODO: Inicializar hashmap dos objetos{chave="nome do objeto", valor=objeto}
-	// TODO: Carregar bispo
-	// TODO: Ler arquivo
-	// TODO: Parser
-	// TODO: return bispo{tipo de peça, posição}
-	// TODO: Caregar cavalo
-	// TODO: ...
 
 	// call the render function
 	var step = 0;
-
 	var pieces = new Array();
+	// Pega a peça do tipo type que está na posição positionx e positionz
+	pieces.get_piece = function(positionx, positionz){
+		list = this.filter(function(item, index, array){
+			return (item.position.x == positionx && item.position.z == positionz);
+		});
+		if(list.length == 1){
+			return list.pop();
+		}
+		alert('Erro no arquivo pgn');
+		return;
+	};
 	var type = {
 			'bispo':null,
 			'cavalo':null,
@@ -459,15 +461,28 @@ function main(plays){
 				if (child.children[0] instanceof THREE.Mesh) {
 					if(cor == "branco"){
 						child.children[0].material = type.white;
+						if(tipo == 'cavalo') geometry.rotation.y = - Math.PI / 2;
+						if(tipo == 'bispo') geometry.rotation.y = Math.PI / 2;
 					}
 					else{
 						child.children[0].material = type.black;
+						if(tipo == 'cavalo') geometry.rotation.y = - Math.PI * 3 / 2;
+						if(tipo == 'bispo') geometry.rotation.y = Math.PI * 3 / 2;
 					}
 				}
 			}
 		});
+		if(cor == "branco"){
+			if(tipo == 'cavalo') geometry.rotation.y = - Math.PI / 2;
+			if(tipo == 'bispo') geometry.rotation.y = Math.PI / 2;
+		}
+		else{
+			if(tipo == 'cavalo') geometry.rotation.y = - Math.PI * 3 / 2;
+			if(tipo == 'bispo') geometry.rotation.y = Math.PI * 3 / 2;
+		}
 		return geometry;
 	};
+
 	// Carregando Bispo
 	var loader = new THREE.OBJLoader();
 	loader.load('objetos/bispo.obj', function(geometry) {
@@ -478,13 +493,11 @@ function main(plays){
 		// Jogador Branco
 		// Peça 1
 		geometry = type.nova_peça('bispo', 'branco');
-		geometry.rotation.y = Math.PI / 2;
 		geometry.position.set(-6,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
 		geometry = type.nova_peça('bispo', 'branco');
-		geometry.rotation.y = Math.PI / 2;
 		geometry.position.set(6,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
@@ -492,17 +505,16 @@ function main(plays){
 		// Jogador Preto
 		// Peça 1
 		geometry = type.nova_peça('bispo', 'preto');
-		geometry.rotation.y = Math.PI * 3 / 2;
 		geometry.position.set(-6,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
 		geometry = type.nova_peça('bispo', 'preto');
-		geometry.rotation.y = Math.PI * 3 / 2;
 		geometry.position.set(6,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+
 	// Carregando Cavalo
 	loader.load('objetos/cavalo.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
@@ -512,13 +524,11 @@ function main(plays){
 		// Jogador Branco
 		// Peça 1
 		geometry = type.nova_peça('cavalo', 'branco');
-		geometry.rotation.y = - Math.PI / 2;
 		geometry.position.set(-10,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
 		geometry = type.nova_peça('cavalo', 'branco');
-		geometry.rotation.y = - Math.PI / 2;
 		geometry.position.set(10,0,14);
 		pieces.push(geometry);
 		scene.add(geometry);
@@ -526,17 +536,16 @@ function main(plays){
 		// Jogador Preto
 		// Peça 1
 		geometry = type.nova_peça('cavalo', 'preto');
-		geometry.rotation.y = - Math.PI * 3 / 2;
 		geometry.position.set(-10,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
 		// Peça 2
 		geometry = type.nova_peça('cavalo', 'preto');
-		geometry.rotation.y = - Math.PI * 3 / 2;
 		geometry.position.set(10,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+
 	// Carregando Peao
 	loader.load('objetos/peao.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
@@ -559,6 +568,7 @@ function main(plays){
 			scene.add(geometry);
 		}
 	});
+
 	// Carregando Rainha
 	loader.load('objetos/rainha.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
@@ -579,6 +589,7 @@ function main(plays){
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+
 	// Carregando Rei
 	loader.load('objetos/rei.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
@@ -599,6 +610,7 @@ function main(plays){
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+
 	// Carregando Torre
 	loader.load('objetos/torre.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
@@ -630,19 +642,14 @@ function main(plays){
 		scene.add(geometry);
 	});
 
+	// Carregando Tabuleiro
 	var loader = new THREE.OBJMTLLoader();
 	loader.addEventListener('load', function (event) {
-
 		var object = event.content;
-
 		object.scale.set(2, 2, 2);
 		scene.add(object);
 	});
-
-
-	loader.load('objetos/tabuleiro.obj', 'objetos/tabuleiro.mtl', {side: THREE.DoubleSide});
-
-	render();
+	loader.load('objetos/tabuleiro.obj', 'objetos/tabuleiro.mtl');
 
 	/*var pecasW = [];
 	var pecasB = [];
@@ -654,12 +661,76 @@ function main(plays){
 	var t = true;
 	var move_list = new Array();
 
+	var t = true;
+
+
+	function Motion(object, x, z){ // Objeto, destino(x,z)
+		this.object = object;
+		this.dx = (x - object.position.x)/60; // Velocidade(dx,dy,dz)
+		this.dy = 8/60;
+		this.dz = (z - object.position.z)/60;
+		this.x = x;
+		this.z = z;
+		this.stage = 4;
+		this.move = function(){
+			switch (this.stage){
+			case 0:
+				var mod = 8 - this.object.position.y;
+				if(mod < 0) mod *= -1;
+				this.object.position.y += this.dy;
+				if(mod < 0.000000001){
+					this.object.position.y = 8;
+					this.stage++;
+				}
+				break;
+			case 1:
+				var modx = x - this.object.position.x;
+				var modz = z - this.object.position.z;
+				if(modx < 0) modx *= -1;
+				if(modz < 0) modz *= -1;
+				this.object.position.x += this.dx;
+				this.object.position.z += this.dz;
+				if(modx < 0.000000001 && modz < 0.000000001) {
+					this.object.position.x = x;
+					this.object.position.z = z;
+					this.stage++;
+				}
+				break;
+			case 2:
+				var mod = this.object.position.y;
+				if(mod < 0) mod = -mod;
+				this.object.position.y -= this.dy;
+				if(mod < 0.000000001){
+					this.object.position.y = 0;
+					this.stage++;
+				}
+				break;
+			default:
+				this.stage = 4;
+			break;
+			}
+		};
+	}
+	var motion;
+	var motion_list = new Array();
+	motion_list.done = function(){
+		return this.every(function(item, index, array){
+			return (item.stage == 4);
+		});
+	};
+	motion_list.move = function(){
+		this.forEach(function(item, index, array){
+			item.move();
+		});
+	};
+
 	function render() {
 
 		// Ler evento de movimento do mouse
 		var delta = clock.getDelta();
 		trackballControls.update(delta);
 
+		<<<<<<< HEAD
 
 		if(t){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
 			if(i < plays.length){
@@ -675,15 +746,82 @@ function main(plays){
 				i++;
 			}
 			// Atualizar argumento da posição
-			move_list; //Concatenar pecaW pecaB
+			move_list = pecas.filter(function(item, index, array){
+				return (item.mod);
+			});
 			t = false;
 		}
 		// Jogo começa depois de todas as peças carregadas
-		if(pieces.length == 32){
+		if(type['bispo'] && type['torre'] && type['cavalo'] && type['peao'] && type['rainha'] && type['rei']){
+			// Percorre a lista de movimentos fazendo as configurações correspondentes
 			while(move_list.length){
+				// Pega a peça que se movimentou
 				move = move_list.pop();
-				console.log(move);
+				move.mod = false;
+				// Ajustando ids
+				switch (move.id){
+				case 'P':
+					move.id = 'peao';
+					break;
+				case 'R':
+					move.id = 'torre';
+					break;
+				case 'N':
+					move.id = 'cavalo';
+					break;
+				case 'B':
+					move.id = 'bispo';
+					break;
+				case 'Q':
+					move.id = 'rainha';
+					break;
+				case 'K':
+					move.id = 'rei';
+					break;
+				}
+				// Ajusta as coordenadas
+				move.px_init = - 14 + 4 * (move.px_init - 1);
+				move.py_init = 14 - 4 * (move.py_init - 1);
+				move.px_final = - 14 + 4 * (move.px_final - 1);
+				move.py_final = 14 - 4 * (move.py_final - 1);
+				// Pega a imagem correspondente à peça
+				object = pieces.get_piece(move.px_init, move.py_init);
+				// Caso Peça se Moveu
+				if(move.px_init != move.px_final || move.py_init != move.py_final){
+					motion = new Motion(object, move.px_final, move.py_final);
+					motion.stage = 0;
+					motion_list.push(motion);
+				}
+				// Caso Peça morreu
+				else if(move.morto){
+					scene.remove(object);
+					pieces.splice(pieces.indexOf(object),1);
+				}
+				// Caso Peça se transformou
+				else {
+					// Ajustando atributos
+					if(move.jogador == 'B'){
+						move.jogador = "branco";
+					}
+					else{
+						move.jogador = "preto";
+					}
+					pieces.splice(pieces.indexOf(object),1);
+					scene.remove(object);
+					var geometry = type.nova_peça(move.id, move.jogador);
+					geometry.position.x = object.position.x;
+					geometry.position.z = object.position.z;
+					delete object;
+					object = geometry;
+					pieces.push(geometry);
+					scene.add(geometry);
+				}
 			}
+			if(motion_list.done()){
+				motion_list.length = 0;
+				t = true;
+			}
+			else motion_list.move();
 		}
 
 

@@ -330,7 +330,7 @@ function main(plays){
 		alert(plays[f].x_init + " " + plays[f].y_init  + " " +
 		plays[f].jogador + " " + plays[f].x_fim  + " " + plays[f].y_fim + " " + plays[f].promotion);
 	}*/
-	/*//Teste mostrando cada movimento em uma matriz que representa o tabuleiro 
+	//Teste mostrando cada movimento em uma matriz que representa o tabuleiro 
 	  // Uma espécie de simulação via matriz
 	var pecasW = [];
 	var pecasB = [];
@@ -369,9 +369,8 @@ function main(plays){
 			print[pecasB[l].py_fim - 1][pecasB[l].px_fim] = pecasB[l].id;
 		
 		alert(print.join('\n'));
-	}*/
+	}
 
-	
 	// once everything is loaded, we run our Three.js stuff.
 
 	// create a scene, that will hold all our elements such as objects, cameras
@@ -386,7 +385,6 @@ function main(plays){
 	var webGLRenderer = new THREE.WebGLRenderer();
 	webGLRenderer.setClearColor(0x888888, 1.0);
 	webGLRenderer.setSize(window.innerWidth, window.innerHeight);
-	webGLRenderer.shadowMapEnabled = true;
 
 	// position and point the camera to the center of the scene
 	camera.position.x = -30;
@@ -404,11 +402,17 @@ function main(plays){
     trackballControls.staticMoving = true;
 //    trackballControls.dynamicDampingFactor=0.3;
 
-	// add spotlight for the shadows
+	// add spotlight
 	var spotLight = new THREE.SpotLight(0xffffff);
 	spotLight.position.set(-30, 40, 50);
 	spotLight.intensity = 1;
 	scene.add(spotLight);
+	
+	// add spotlight
+	var spotLight2 = new THREE.SpotLight(0xffffff);
+	spotLight2.position.set(30, 40, -50);
+	spotLight2.intensity = 1;
+	scene.add(spotLight2);
 
 	// add the output of the renderer to the html element
 	$("#WebGL-output").append(webGLRenderer.domElement);
@@ -432,146 +436,197 @@ function main(plays){
 	// call the render function
 	var step = 0;
 	
-	var objects = {
-		'bispo': null,
-		'cavalo': null,
-		'peao': null,
-		'rainha': null,
-		'rei': null,
-		'torre': null,
-		'tabuleiro': null
+	var pieces = new Array();
+	var type = {
+			'bispo':null,
+			'cavalo':null,
+			'peao':null,
+			'rainha':null,
+			'rei':null,
+			'torre':null
 	};
-	
+	type.white = new THREE.MeshLambertMaterial({
+		color : 0xffffff
+	});
+	type.black = new THREE.MeshLambertMaterial({
+		color : 0x444444
+	});
+	// Cria nova peça tipo pode ser bispo, cavalo, peao, rainha, rei e torre e a cor pode ser branco ou preto
+	type.nova_peça = function (tipo, cor){
+		geometry = this[tipo].clone();
+		geometry.children.forEach(function(child) {
+			if (child.children.length == 1) {
+				if (child.children[0] instanceof THREE.Mesh) {
+					if(cor == "branco"){
+						child.children[0].material = type.white;
+					}
+					else{
+						child.children[0].material = type.black;
+					}
+				}
+			}
+		});
+		return geometry;
+	};
+	// Carregando Bispo
 	var loader = new THREE.OBJLoader();
 	loader.load('objetos/bispo.obj', function(geometry) {
-		var material = new THREE.MeshLambertMaterial({
-			color : 0xffffff
-		});
-
-		// geometry is a group of children. If a child has one additional
-		// child
-		// it's probably a mesh
-		geometry.children.forEach(function(child) {
-			if (child.children.length == 1) {
-				if (child.children[0] instanceof THREE.Mesh) {
-					child.children[0].material = material;
-				}
-			}
-		});
-
-		objects['bispo'] = geometry;
 		geometry.scale.set(5, 5, 5);
-		geometry.position.x = -9;
+		geometry.name = "bispo";
+		type['bispo'] = geometry;
+		
+		// Jogador Branco
+		// Peça 1
+		geometry = type.nova_peça('bispo', 'branco');
+		geometry.rotation.y = Math.PI / 2;
+		geometry.position.set(-6,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		// Peça 2
+		geometry = type.nova_peça('bispo', 'branco');
+		geometry.rotation.y = Math.PI / 2;
+		geometry.position.set(6,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		
+		// Jogador Preto
+		// Peça 1
+		geometry = type.nova_peça('bispo', 'preto');
+		geometry.rotation.y = Math.PI * 3 / 2;
+		geometry.position.set(-6,0,-14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		// Peça 2
+		geometry = type.nova_peça('bispo', 'preto');
+		geometry.rotation.y = Math.PI * 3 / 2;
+		geometry.position.set(6,0,-14);
+		pieces.push(geometry);
 		scene.add(geometry);
 	});
-	
+	// Carregando Cavalo
 	loader.load('objetos/cavalo.obj', function(geometry) {
-		var material = new THREE.MeshLambertMaterial({
-			color : 0xffffff
-		});
-
-		// geometry is a group of children. If a child has one additional
-		// child
-		// it's probably a mesh
-		geometry.children.forEach(function(child) {
-			if (child.children.length == 1) {
-				if (child.children[0] instanceof THREE.Mesh) {
-					child.children[0].material = material;
-				}
-			}
-		});
-
-		objects['cavalo'] = geometry;
 		geometry.scale.set(5, 5, 5);
-		geometry.position.x = -6;
+		geometry.name = "cavalo";
+		type['cavalo'] = geometry;
+		
+		// Jogador Branco
+		// Peça 1
+		geometry = type.nova_peça('cavalo', 'branco');
+		geometry.rotation.y = - Math.PI / 2;
+		geometry.position.set(-10,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		// Peça 2
+		geometry = type.nova_peça('cavalo', 'branco');
+		geometry.rotation.y = - Math.PI / 2;
+		geometry.position.set(10,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		
+		// Jogador Preto
+		// Peça 1
+		geometry = type.nova_peça('cavalo', 'preto');
+		geometry.rotation.y = - Math.PI * 3 / 2;
+		geometry.position.set(-10,0,-14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		// Peça 2
+		geometry = type.nova_peça('cavalo', 'preto');
+		geometry.rotation.y = - Math.PI * 3 / 2;
+		geometry.position.set(10,0,-14);
+		pieces.push(geometry);
 		scene.add(geometry);
 	});
-	
+	// Carregando Peao
 	loader.load('objetos/peao.obj', function(geometry) {
-		var material = new THREE.MeshLambertMaterial({
-			color : 0xffffff
-		});
-
-		// geometry is a group of children. If a child has one additional
-		// child
-		// it's probably a mesh
-		geometry.children.forEach(function(child) {
-			if (child.children.length == 1) {
-				if (child.children[0] instanceof THREE.Mesh) {
-					child.children[0].material = material;
-				}
-			}
-		});
-
-		objects['peao'] = geometry;
 		geometry.scale.set(5, 5, 5);
-		geometry.position.x = -3;
-		scene.add(geometry);
+		geometry.name = "peao";
+		type['peao'] = geometry;
+		
+		// Jogador Branco
+		for(var i = 0; i < 8; i++){
+			geometry = type.nova_peça('peao', 'branco');
+			geometry.position.set(-14 + i*4, 0, 10);
+			pieces.push(geometry);
+			scene.add(geometry);
+		}
+		
+		// Jogador Preto
+		for(var i = 0; i < 8; i++){
+			geometry = type.nova_peça('peao', 'preto');
+			geometry.position.set(-14 + i*4, 0, -10);
+			pieces.push(geometry);
+			scene.add(geometry);
+		}
 	});
-	
+	// Carregando Rainha
 	loader.load('objetos/rainha.obj', function(geometry) {
-		var material = new THREE.MeshLambertMaterial({
-			color : 0xffffff
-		});
-
-		// geometry is a group of children. If a child has one additional
-		// child
-		// it's probably a mesh
-		geometry.children.forEach(function(child) {
-			if (child.children.length == 1) {
-				if (child.children[0] instanceof THREE.Mesh) {
-					child.children[0].material = material;
-				}
-			}
-		});
-
-		objects['rainha'] = geometry;
 		geometry.scale.set(5, 5, 5);
-		geometry.position.x = 0;
+		geometry.name = "rainha";
+		type['rainha'] = geometry;
+
+		// Jogador Branco
+		geometry = type.nova_peça('rainha', 'branco');
+		geometry.scale.set(5, 5, 5);
+		geometry.position.set(2,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		
+		// Jogador preto
+		geometry = type.nova_peça('rainha', 'preto');
+		geometry.scale.set(5, 5, 5);
+		geometry.position.set(-2,0,-14);
+		pieces.push(geometry);
 		scene.add(geometry);
 	});
-	
+	// Carregando Rei
 	loader.load('objetos/rei.obj', function(geometry) {
-		var material = new THREE.MeshLambertMaterial({
-			color : 0xffffff
-		});
-
-		// geometry is a group of children. If a child has one additional
-		// child
-		// it's probably a mesh
-		geometry.children.forEach(function(child) {
-			if (child.children.length == 1) {
-				if (child.children[0] instanceof THREE.Mesh) {
-					child.children[0].material = material;
-				}
-			}
-		});
-
-		objects['rei'] = geometry;
 		geometry.scale.set(5, 5, 5);
-		geometry.position.x = 3;
+		geometry.name = "rei";
+		type['rei'] = geometry;
+
+		// Jogador Branco
+		geometry = type.nova_peça('rei', 'branco');
+		geometry.scale.set(5, 5, 5);
+		geometry.position.set(-2,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		
+		// Jogador preto
+		geometry = type.nova_peça('rei', 'preto');
+		geometry.scale.set(5, 5, 5);
+		geometry.position.set(2,0,-14);
+		pieces.push(geometry);
 		scene.add(geometry);
 	});
-	
+	// Carregando Torre
 	loader.load('objetos/torre.obj', function(geometry) {
-		var material = new THREE.MeshLambertMaterial({
-			color : 0xffffff
-		});
-
-		// geometry is a group of children. If a child has one additional
-		// child
-		// it's probably a mesh
-		geometry.children.forEach(function(child) {
-			if (child.children.length == 1) {
-				if (child.children[0] instanceof THREE.Mesh) {
-					child.children[0].material = material;
-				}
-			}
-		});
-
-		objects['torre'] = geometry;
 		geometry.scale.set(5, 5, 5);
-		geometry.position.x = 6;
+		geometry.name = "torre";
+		type['torre'] = geometry;
+		
+		// Jogador Branco
+		// Peça 1
+		geometry = type.nova_peça('torre', 'branco');
+		geometry.position.set(-14,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		// Peça 2
+		geometry = type.nova_peça('torre', 'branco');
+		geometry.position.set(14,0,14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		
+		// Jogador Preto
+		// Peça 1
+		geometry = type.nova_peça('torre', 'preto');
+		geometry.position.set(-14,0,-14);
+		pieces.push(geometry);
+		scene.add(geometry);
+		// Peça 2
+		geometry = type.nova_peça('torre', 'preto');
+		geometry.position.set(14,0,-14);
+		pieces.push(geometry);
 		scene.add(geometry);
 	});
 	
@@ -581,8 +636,7 @@ function main(plays){
         var object = event.content;
 
         object.scale.set(2, 2, 2);
-        objects['tabuleiro'] = object;
-        scene.add(objects['tabuleiro']);
+        scene.add(object);
     });
 
 
@@ -590,45 +644,48 @@ function main(plays){
 
 	render();
 	
-	var pecasW = [];
+	/*var pecasW = [];
 	var pecasB = [];
 	pecasW = iniciaPecas('W');
 	pecasB = iniciaPecas('B');
 	var pecas = pecasW.concat(pecasB);
+	var i = 0; */
 	
 	var t = true;
-	var i = 0;
-	
+	var move_list = new Array();
+
 	function render() {
-		// TODO: Update Args das operações
-		// TODO:Ler evento de movimenTODO mouse
+
+		// Ler evento de movimento do mouse
 		var delta = clock.getDelta();
 		trackballControls.update(delta);
-		/*if(t){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
-			if(i < plays.length){
-				if(plays[i].jogador == 'W'){
-					pecasW = mover(pecasW, plays[i]);
-					pecasB = kill(pecasB, plays[i]);
-				}
-				else{
-					pecasW = kill(pecasW, plays[i]);
-					pecasB = mover(pecasB, plays[i]);
-				}
-				pecas = pecasW.concat(pecasB);
-				i++;
-			}
-		}*/
-		// TODO: Atualizar argumento de Rotação
-
-		// TODO: Atualizar argumento de Scale
-		// TODO: Pop do movimento
-
-		// TODO: Atualizar argumento da posição
 		
-		// Loop para cada peça
-		for(object in objects){
-			if(objects[object]){
-				//objects[object].rotation.x += 0.006;
+		/*if(t){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
+		if(i < plays.length){
+			if(plays[i].jogador == 'W'){
+				pecasW = mover(pecasW, plays[i]);
+				pecasB = kill(pecasB, plays[i]);
+			}
+			else{
+				pecasW = kill(pecasW, plays[i]);
+				pecasB = mover(pecasB, plays[i]);
+			}
+			pecas = pecasW.concat(pecasB);
+			i++;
+		}
+	}*/
+		
+		// Pop do movimento
+		if(t){
+			// TODO: Atualizar argumento da posição
+			move_list; //Concatenar pecaW pecaB
+			t = false;
+		}
+		// Jogo começa depois de todas as peças carregadas
+		if(pieces.length == 32){
+			while(move_list.length){
+				move = move_list.pop();
+				console.log(move);
 			}
 		}
 

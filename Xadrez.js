@@ -707,12 +707,8 @@ function main(plays){
 	pecasW = iniciaPecas('W');
 	pecasB = iniciaPecas('B');
 	var i = 0;
-	var t = true;
 	var move_list = new Array();
 	render();
-	var count = 1;
-	
-	console.log(motion_list.done());
 
 	function render() {
 		// Jogo começa depois de todas as peças carregadas
@@ -732,8 +728,6 @@ function main(plays){
 					pecasW = kill(pecasW, plays[i]);
 					pecasB = mover(pecasB, plays[i]);
 				}
-				console.log(pecasW);
-				console.log(pecasB);
 				move_list = pecasW.concat(pecasB);
 				i++;
 			}
@@ -741,33 +735,31 @@ function main(plays){
 			//move_list = move_list.filter(function(item, index, array){
 			//	return (item.mod);
 			//});
-			t = false;
 		}
 			// Percorre a lista de movimentos fazendo as configurações correspondentes
 			while(move_list.length){
-				console.log(count++);
 				// Pega a peça que se movimentou
 				move = move_list.pop();
-				console.log(move);
+				move.px_init = parseInt(move.px_init);
+				move.py_init = parseInt(move.py_init);
+				move.px_fim = parseInt(move.px_fim);
+				move.py_fim = parseInt(move.py_fim);
 				move.mod = false;
 				// Pega a imagem correspondente à peça
 				object = pieces.get_piece(move.px_init, move.py_init);
 				// Caso Peça se Moveu
 				if(move.px_init != move.px_fim || move.py_init != move.py_fim){
-					console.log("Move");
 					motion = new Motion(object, move.px_fim, move.py_fim);
 					motion.stage = 0;
 					motion_list.push(motion);
 				}
 				// Caso Peça morreu
 				else if(move.morto){
-					console.log("Morreu");
 					scene.remove(object);
 					pieces.splice(pieces.indexOf(object),1);
 				}
 				// Caso Peça se transformou
 				else if(object.name != move.id) {
-					console.log("Transformou");
 					pieces.splice(pieces.indexOf(object),1);
 					scene.remove(object);
 					var geometry = type.nova_peça(move.id, move.jogador);
@@ -777,9 +769,6 @@ function main(plays){
 					object = geometry;
 					pieces.push(geometry);
 					scene.add(geometry);
-				}
-				else {
-					console.log("Não mudou");
 				}
 			}
 			// Se o movimento não terminou continue o movimento

@@ -324,52 +324,6 @@ function handleFileSelect(evt) {
 function main(plays){
 	var clock = new THREE.Clock();
 
-	/*//Teste para ver cada atributo de cada movimento
-	for(var f = 0; f < plays.length; f++){
-		alert(plays[f].x_init + " " + plays[f].y_init  + " " +
-		plays[f].jogador + " " + plays[f].x_fim  + " " + plays[f].y_fim + " " + plays[f].promotion);
-	}*/
-	//Teste mostrando cada movimento em uma matriz que representa o tabuleiro 
-	// Uma espécie de simulação via matriz
-	var pecasW = [];
-	var pecasB = [];
-	var print = new Array(9);
-	for(var i = 0 ; i < 9; i++){
-		print[i] = new Array(9);
-	}
-	print[8][1] = 'A'; print[0][0] = "1 - ";
-	print[8][2] = 'B'; print[1][0] = "2 - ";
-	print[8][3] = 'C'; print[2][0] = "3 - ";
-	print[8][4] = 'D'; print[3][0] = "4 - ";
-	print[8][5] = 'E'; print[4][0] = "5 - ";
-	print[8][6] = 'F'; print[5][0] = "6 - ";
-	print[8][7] = 'G'; print[6][0] = "7 - ";
-	print[8][8] = 'H'; print[7][0] = "8 - ";
-	print[8][0] = 'X - ';
-	pecasW = iniciaPecas('W');
-	pecasB = iniciaPecas('B');
-	for(var i = 0; i < plays.length; i++){
-		for(var j = 0; j < 8; j++){
-			for(var l = 1; l < 9; l++){
-				print[j][l] = 'O';
-			}
-		}
-		if(plays[i].jogador == 'W'){
-			pecasW = mover(pecasW, plays[i]);
-			pecasB = kill(pecasB, plays[i]);
-		}
-		else{
-			pecasW = kill(pecasW, plays[i]);
-			pecasB = mover(pecasB, plays[i]);
-		}
-		for(var j = 0; j < pecasW.length; j++)
-			print[pecasW[j].py_fim - 1][pecasW[j].px_fim] = pecasW[j].id;
-		for(var l = 0; l < pecasB.length; l++)
-			print[pecasB[l].py_fim - 1][pecasB[l].px_fim] = pecasB[l].id;
-
-		alert(print.join('\n'));
-	}
-
 	// once everything is loaded, we run our Three.js stuff.
 
 	// create a scene, that will hold all our elements such as objects, cameras
@@ -651,18 +605,6 @@ function main(plays){
 	});
 	loader.load('objetos/tabuleiro.obj', 'objetos/tabuleiro.mtl');
 
-	/*var pecasW = [];
-	var pecasB = [];
-	pecasW = iniciaPecas('W');
-	pecasB = iniciaPecas('B');
-	var pecas = pecasW.concat(pecasB);
-	var i = 0; */
-
-	var t = true;
-	var move_list = new Array();
-
-	var t = true;
-
 
 	function Motion(object, x, z){ // Objeto, destino(x,z)
 		this.object = object;
@@ -723,6 +665,17 @@ function main(plays){
 			item.move();
 		});
 	};
+	
+	
+	var pecasW = [];
+	var pecasB = [];
+	pecasW = iniciaPecas('W');
+	pecasB = iniciaPecas('B');
+	var i = 0;
+	var t = true;
+	var move_list = new Array();
+	var move_list_aux = new Array();
+	render();
 
 	function render() {
 
@@ -730,9 +683,9 @@ function main(plays){
 		var delta = clock.getDelta();
 		trackballControls.update(delta);
 
-		<<<<<<< HEAD
-
 		if(t){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
+			move_list.push(move_list_aux);
+			move_list_aux.length = 0;
 			if(i < plays.length){
 				if(plays[i].jogador == 'W'){
 					pecasW = mover(pecasW, plays[i]);
@@ -742,11 +695,11 @@ function main(plays){
 					pecasW = kill(pecasW, plays[i]);
 					pecasB = mover(pecasB, plays[i]);
 				}
-				pecas = pecasW.concat(pecasB);
+				move_list = pecasW.concat(pecasB);
 				i++;
 			}
 			// Atualizar argumento da posição
-			move_list = pecas.filter(function(item, index, array){
+			move_list = move_list.filter(function(item, index, array){
 				return (item.mod);
 			});
 			t = false;
@@ -755,8 +708,10 @@ function main(plays){
 		if(type['bispo'] && type['torre'] && type['cavalo'] && type['peao'] && type['rainha'] && type['rei']){
 			// Percorre a lista de movimentos fazendo as configurações correspondentes
 			while(move_list.length){
+				console.log(move_list.length);
 				// Pega a peça que se movimentou
 				move = move_list.pop();
+				move_list_aux.push(move);
 				move.mod = false;
 				// Ajustando ids
 				switch (move.id){
@@ -779,16 +734,21 @@ function main(plays){
 					move.id = 'rei';
 					break;
 				}
+				console.log(move);
 				// Ajusta as coordenadas
 				move.px_init = - 14 + 4 * (move.px_init - 1);
 				move.py_init = 14 - 4 * (move.py_init - 1);
-				move.px_final = - 14 + 4 * (move.px_final - 1);
-				move.py_final = 14 - 4 * (move.py_final - 1);
+				move.px_fim = - 14 + 4 * (move.px_fim - 1);
+				move.py_fim = 14 - 4 * (move.py_fim - 1);
+				console.log(move.px_init);
+				console.log(move.py_init);
+				console.log(move.px_fim);
+				console.log(move.py_fim);
 				// Pega a imagem correspondente à peça
 				object = pieces.get_piece(move.px_init, move.py_init);
 				// Caso Peça se Moveu
-				if(move.px_init != move.px_final || move.py_init != move.py_final){
-					motion = new Motion(object, move.px_final, move.py_final);
+				if(move.px_init != move.px_fim || move.py_init != move.py_fim){
+					motion = new Motion(object, move.px_fim, move.py_fim);
 					motion.stage = 0;
 					motion_list.push(motion);
 				}
@@ -823,8 +783,6 @@ function main(plays){
 			}
 			else motion_list.move();
 		}
-
-
 		// render using requestAnimationFrame
 		requestAnimationFrame(render);
 		webGLRenderer.render(scene, camera);

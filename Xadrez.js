@@ -28,13 +28,16 @@ function changeJ(jogador){
 }
 
 // função que recebe a jogada e forma um objeto jogada com os atributos corretos
-// Ela lê a jogada codificada de traz para frente e cortando o que já foi codificado
 function obj_mov(acao, jog){
 	var m = new Mov(jog);
+	// Separa as duas strings do "-". 
+	// Assim, a primeira string é a posição inicial e a segunda a final
 	var movs = acao.split("-");
 	m.x_init = valorx(movs[0][0]);
 	m.y_init = movs[0][1];
 	
+	// Caso tenha + e #, retira, pois não é útil ao nosso trabalho
+	// Caso tenha um caracter, será um movimento de pawn promotion
 	if(movs[1].length == 3){
 		if(movs[1][2] == '+' || movs[1][2] == '#')
 			movs[1] = movs[1].slice(0, 2);	
@@ -43,7 +46,6 @@ function obj_mov(acao, jog){
 			movs[1] = movs[1].slice(0, 2);	
 		}
 	}
-	
 	m.x_fim = valorx(movs[1][0]);
 	m.y_fim = movs[1][1];
 	return m;
@@ -51,13 +53,14 @@ function obj_mov(acao, jog){
 
 //Essa classe conterá os atributos de cada peca do jogo
 function Peca(jog){
-	this.id = null;
-	this.jogador = jog;
-	this.px_init = 0;
-	this.py_init = 0;
-	this.px_fim = 0;
-	this.py_fim = 0;
-	this.morto = false;
+	this.id = null;   // Id da peça = {P, K, N, Q, B, R}
+	this.jogador = jog;  // {W, B}
+	this.px_init = 0;   // Posição da coluna onde está a peça
+	this.py_init = 0;	// Posição da linha onde está a peça
+	this.px_fim = 0;	// Posição da coluna onde a peça se moverá
+	this.py_fim = 0;	// Posição da linha onde a peça se moverá
+	this.morto = false;	// Informação se foi capturado
+	this.mod = false;	// Um auxiliar que nos indica se houve alguma mudança da peça na jogada
 }
 
 // Função que inicia as peças com seus respectivos lugares iniciais
@@ -68,7 +71,7 @@ function iniciaPecas(jog){
 		var p = new Peca(jog);
 		p.id = 'P';
 		p.px_init = i; 
-		if(jog = 'W')
+		if(jog == 'W')
 			p.py_init = 2;
 		else
 			p.py_init = 7;
@@ -82,7 +85,7 @@ function iniciaPecas(jog){
 	for(var i = 1; i <= 8 ; i++){
 		var p = new Peca(jog);
 		p.px_init = i; 
-		if(jog = 'W')
+		if(jog == 'W')
 			p.py_init = 1;
 		else
 			p.py_init = 8;
@@ -98,32 +101,40 @@ function iniciaPecas(jog){
 	return pecas;
 }
 
+// Função que recebe a jogada e as peças do jogador que não vai se mover na jogada
+// Assim, poderemos saber se o jogador da jogada capturou uma peça do adversário
 function kill(pecas, play){
 	for(var i = 0; i < pecas.length; i++){
-		// Para que não faça a animação da rodada anterior
+		// Para que não faça a animação da rodada anterior, pois o jogador
+		// dessas peças não moverá
 		pecas[i].px_init = pecas[i].px_fim;
 		pecas[i].py_init = pecas[i].py_fim;
+		pecas[i].mod = false;
 	}
-	// en passant
+	//Caso de captura no en passant
 	for(var i = 0; i < pecas.length; i++){
-		if(pecas[i].id == 'P' && pecas[i].jogador = 'W' &&
+		if(pecas[i].id == 'P' && pecas[i].jogador == 'W' &&
 				pecas[i].py_fim == 4 && (play.x_init == pecas[i].px_fim - 1 ||
-				play.x_init == pecas[i].px_fim + 1) && play.py_init == 4 &&
+				play.x_init == pecas[i].px_fim + 1) && play.y_init == 4 &&
 				play.x_fim == pecas[i].px_fim && play.y_fim == 3){
 			pecas[i].morto = true;
+			pecas[i].mod = true;
 			return pecas;
 		}
-		else if(pecas[i].id == 'P' && pecas[i].jogador = 'B' &&
+		else if(pecas[i].id == 'P' && pecas[i].jogador == 'B' &&
 				pecas[i].py_fim == 5 && (play.x_init == pecas[i].px_fim - 1 ||
-				play.x_init == pecas[i].px_fim + 1) && play.py_init == 5 &&
+				play.x_init == pecas[i].px_fim + 1) && play.y_init == 5 &&
 				play.x_fim == pecas[i].px_fim && play.y_fim == 6){
 			pecas[i].morto = true;
+			pecas[i].mod = true;
 			return pecas;
 		}
 	}
+	// Caso de captura normal
 	for(var i = 0; i < pecas.length; i++){
 		if(pecas[i].px_fim == play.x_fim && pecas[i].py_fim == play.y_fim){
 			pecas[i].morto = true;
+			pecas[i].mod = true;
 			break;
 		}
 	}
@@ -133,20 +144,21 @@ function kill(pecas, play){
 // Função que realiza o movimento e retorna as peças atuaizadas
 function mover(pecas, play){
 	for(var i = 0; i < pecas.length; i++){
-		// Se houve captura na jogada passada, retira a peça
-		if(pecas[i].killed){
-			pecas = pecas.splice(i, 1);
+		pecas[i].mod = false;
+		// Se houve captura na jogada passada, retira a peça, pois ela
+		// não tem mais utiidade no jogo
+		if(pecas[i].morto){
+			pecas.splice(i, 1);
 			i--;
 		}
-		// Atualiza a posição anterior pela atual
 	}
 	// Verifica qual peça a ser mudada e atualiza as posições
 	for(var i = 0; i < pecas.length; i++){
 		if(pecas[i].px_init == play.x_init && pecas[i].py_init == play.y_init){
 			// Pawn promotion
 			if(play.promotion != null)
-				pecas[i].id = pay.promotion;
-			// Kingside castling
+				pecas[i].id = play.promotion;
+			// Kingside castling (a torre também moverá)
 			else if((play.x_init == 5 && play.y_init == 8 &&
 					play.x_fim == 7 && play.y_fim == 8) ||
 					(play.x_init == 5 && play.y_init == 1 &&
@@ -154,21 +166,28 @@ function mover(pecas, play){
 	
 				for(var j = 0; !(pecas[j].px_init == 8 && 
 				pecas[j].py_init == play.y_init); j++);
-				pecas[j].px_fim == 6;
-				pecas[i].py_fim == play.y_fim;
+				
+				pecas[j].px_fim = 6;
+				pecas[j].py_fim = play.y_fim;
+				pecas[j].mod = true;
 			}
-			// Queenside castling
+			// Queenside castling (a torre também moverá)
 			else if((play.x_init == 5 && play.y_init == 8 &&
 					play.x_fim == 3 && play.y_fim == 8) ||
 					(play.x_init == 5 && play.y_init == 1 &&
 					play.x_fim == 3 && play.y_fim == 1)){
+				
 				for(var j = 0; !(pecas[j].px_init == 1 && 
 				pecas[j].py_init == play.y_init); j++);
-				pecas[j].px_fim == 4;
-				pecas[i].py_fim == play.y_fim;
+				
+				pecas[j].px_fim = 4;
+				pecas[j].py_fim = play.y_fim;
+				pecas[j].mod = true;
 			}
-			pecas[i].px_fim == play.x_fim;
-			pecas[i].py_fim == play.y_fim;
+			// Atualiza para onde a peça irá
+			pecas[i].px_fim = play.x_fim;
+			pecas[i].py_fim = play.y_fim;
+			pecas[i].mod = true;
 			break;
 		}
 	}
@@ -218,7 +237,8 @@ function handleFileSelect(evt) {
 					i--;
 				}
 			}
-			//Variável que guardará todas as "palavras" do texto
+			//Variável que guardará todas as "palavras" do texto e
+			// retirará as palavras dos comentários, assim como espaços em branco
 			var al_words = new Array();
 			var comment_nextline = false;
 			for(var i = 0; i < str.length; i++){
@@ -302,42 +322,56 @@ function handleFileSelect(evt) {
 	}
 }
 
-
 function main(plays){
 	var clock = new THREE.Clock();
 	
-	//Teste
-	/*for(var f = 0; f < plays.length; f++){
+	/*//Teste para ver cada atributo de cada movimento
+	for(var f = 0; f < plays.length; f++){
 		alert(plays[f].x_init + " " + plays[f].y_init  + " " +
 		plays[f].jogador + " " + plays[f].x_fim  + " " + plays[f].y_fim + " " + plays[f].promotion);
 	}*/
-	var tab = [["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"],
-	           ["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"],
-	           ["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"],
-	           ["O","O","O","O","O","O","O","O"],["O","O","O","O","O","O","O","O"]];
-	var print = tab;
+	/*//Teste mostrando cada movimento em uma matriz que representa o tabuleiro 
+	  // Uma espécie de simulação via matriz
 	var pecasW = [];
 	var pecasB = [];
+	var print = new Array(9);
+	for(var i = 0 ; i < 9; i++){
+		print[i] = new Array(9);
+	}
+	print[8][1] = 'A'; print[0][0] = "1 - ";
+	print[8][2] = 'B'; print[1][0] = "2 - ";
+	print[8][3] = 'C'; print[2][0] = "3 - ";
+	print[8][4] = 'D'; print[3][0] = "4 - ";
+	print[8][5] = 'E'; print[4][0] = "5 - ";
+	print[8][6] = 'F'; print[5][0] = "6 - ";
+	print[8][7] = 'G'; print[6][0] = "7 - ";
+	print[8][8] = 'H'; print[7][0] = "8 - ";
+	print[8][0] = 'X - ';
 	pecasW = iniciaPecas('W');
 	pecasB = iniciaPecas('B');
 	for(var i = 0; i < plays.length; i++){
-		print = tab;
+		for(var j = 0; j < 8; j++){
+			for(var l = 1; l < 9; l++){
+				print[j][l] = 'O';
+			}
+		}
 		if(plays[i].jogador == 'W'){
 			pecasW = mover(pecasW, plays[i]);
-		//	pecasB = kill(pecasB, plays[i]);
+			pecasB = kill(pecasB, plays[i]);
 		}
 		else{
-			//pecasW = kill(pecasW, plays[i]);
+			pecasW = kill(pecasW, plays[i]);
 			pecasB = mover(pecasB, plays[i]);
 		}
 		for(var j = 0; j < pecasW.length; j++)
-			print[pecasW[j].py_fim - 1][pecasW[j].px_fim - 1] = pecasW[j].id;
+			print[pecasW[j].py_fim - 1][pecasW[j].px_fim] = pecasW[j].id;
 		for(var l = 0; l < pecasB.length; l++)
-			print[pecasB[l].py_fim - 1][pecasB[l].px_fim - 1] = pecasB[l].id;
+			print[pecasB[l].py_fim - 1][pecasB[l].px_fim] = pecasB[l].id;
+		
 		alert(print.join('\n'));
-	}
+	}*/
 
-	// Fim dos testes
+	
 	// once everything is loaded, we run our Three.js stuff.
 
 	// create a scene, that will hold all our elements such as objects, cameras
@@ -556,22 +590,41 @@ function main(plays){
 
 	render();
 	
+	var pecasW = [];
+	var pecasB = [];
+	pecasW = iniciaPecas('W');
+	pecasB = iniciaPecas('B');
+	var pecas = pecasW.concat(pecasB);
+	
 	var t = true;
-
+	var i = 0;
+	
 	function render() {
 		// TODO: Update Args das operações
-
 		// TODO:Ler evento de movimenTODO mouse
 		var delta = clock.getDelta();
 		trackballControls.update(delta);
-
+		/*if(t){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
+			if(i < plays.length){
+				if(plays[i].jogador == 'W'){
+					pecasW = mover(pecasW, plays[i]);
+					pecasB = kill(pecasB, plays[i]);
+				}
+				else{
+					pecasW = kill(pecasW, plays[i]);
+					pecasB = mover(pecasB, plays[i]);
+				}
+				pecas = pecasW.concat(pecasB);
+				i++;
+			}
+		}*/
 		// TODO: Atualizar argumento de Rotação
 
 		// TODO: Atualizar argumento de Scale
 		// TODO: Pop do movimento
 
 		// TODO: Atualizar argumento da posição
-
+		
 		// Loop para cada peça
 		for(object in objects){
 			if(objects[object]){

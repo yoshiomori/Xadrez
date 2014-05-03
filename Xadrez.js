@@ -310,18 +310,30 @@ function main(plays){
 	// TODO: Carregar tabuleiro
 
 	// TODO: Criar peças do jogo (posição(int int), jogador,status) Funções(in(Classe da peça, movimento)out(peça))
-	// TODO: Inicializar hashmap dos objetos{chave="nome do objeto", valor=objeto}
-	// TODO: Carregar bispo
-	// TODO: Ler arquivo
-	// TODO: Parser
-	// TODO: return bispo{tipo de peça, posição}
-	// TODO: Caregar cavalo
-	// TODO: ...
 
 	// call the render function
 	var step = 0;
 	
+	// Array de todas as peças
 	var pieces = new Array();
+	// Pega a peça do tipo type que está na posição positionx e positionz
+	pieces.get_piece = function(type, positionx, positionz){
+		var list = this.filter(function(item, index, array){
+			return (item.name == type);
+		});
+		list = list.filter(function(item, index, array){
+			if(positionx >= 'a' && positionx <= 'h'){
+				positionx = 14 - 4 * (positionx.charCodeAt(0) - 97);
+				positionz = 14 - 4 * (positionz - 1);
+			}
+			return (item.position.x == positionx && item.position.y == positiony);
+		});
+		if(list.length == 1){
+			return list.pop();
+		}
+		alert('Erro no arquivo pgn');
+		return;
+	};
 	var type = {
 			'bispo':null,
 			'cavalo':null,
@@ -353,11 +365,19 @@ function main(plays){
 		});
 		return geometry;
 	};
+	
 	// Carregando Bispo
 	var loader = new THREE.OBJLoader();
 	loader.load('objetos/bispo.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
 		geometry.name = "bispo";
+		geometry.motion = new Object();
+		geometry.motion.set = function(x,y,z){
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		};
+		geometry.motion.set(0,0,0);
 		type['bispo'] = geometry;
 		
 		// Jogador Branco
@@ -388,10 +408,18 @@ function main(plays){
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+	
 	// Carregando Cavalo
 	loader.load('objetos/cavalo.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
 		geometry.name = "cavalo";
+		geometry.motion = new Object();
+		geometry.motion.set = function(x,y,z){
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		};
+		geometry.motion.set(0,0,0);
 		type['cavalo'] = geometry;
 		
 		// Jogador Branco
@@ -422,10 +450,18 @@ function main(plays){
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+	
 	// Carregando Peao
 	loader.load('objetos/peao.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
 		geometry.name = "peao";
+		geometry.motion = new Object();
+		geometry.motion.set = function(x,y,z){
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		};
+		geometry.motion.set(0,0,0);
 		type['peao'] = geometry;
 		
 		// Jogador Branco
@@ -444,10 +480,18 @@ function main(plays){
 			scene.add(geometry);
 		}
 	});
+	
 	// Carregando Rainha
 	loader.load('objetos/rainha.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
 		geometry.name = "rainha";
+		geometry.motion = new Object();
+		geometry.motion.set = function(x,y,z){
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		};
+		geometry.motion.set(0,0,0);
 		type['rainha'] = geometry;
 
 		// Jogador Branco
@@ -464,10 +508,18 @@ function main(plays){
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+	
 	// Carregando Rei
 	loader.load('objetos/rei.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
 		geometry.name = "rei";
+		geometry.motion = new Object();
+		geometry.motion.set = function(x,y,z){
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		};
+		geometry.motion.set(0,0,0);
 		type['rei'] = geometry;
 
 		// Jogador Branco
@@ -484,10 +536,18 @@ function main(plays){
 		pieces.push(geometry);
 		scene.add(geometry);
 	});
+	
 	// Carregando Torre
 	loader.load('objetos/torre.obj', function(geometry) {
 		geometry.scale.set(5, 5, 5);
 		geometry.name = "torre";
+		geometry.motion = new Object();
+		geometry.motion.set = function(x,y,z){
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		};
+		geometry.motion.set(0,0,0);
 		type['torre'] = geometry;
 		
 		// Jogador Branco
@@ -515,17 +575,14 @@ function main(plays){
 		scene.add(geometry);
 	});
 	
+	// Carregando Tabuleiro
 	var loader = new THREE.OBJMTLLoader();
     loader.addEventListener('load', function (event) {
-
         var object = event.content;
-
         object.scale.set(2, 2, 2);
         scene.add(object);
     });
-
-
-    loader.load('objetos/tabuleiro.obj', 'objetos/tabuleiro.mtl', {side: THREE.DoubleSide});
+    loader.load('objetos/tabuleiro.obj', 'objetos/tabuleiro.mtl');
 
 	render();
 	
@@ -548,7 +605,8 @@ function main(plays){
 		if(pieces.length == 32){
 			while(move_list.length){
 				move = move_list.pop();
-				console.log(move);
+				object = pieces.get_piece(move.id,move.px_init, move.py_init);
+				if(move.px_init != move.px_fim && move.py_int != move.py_fim)
 			}
 		}
 

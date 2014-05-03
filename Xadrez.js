@@ -8,7 +8,7 @@ function Mov (jog) {
     this.kill = false;		// Se essa jogada haverá captura de peça adversária
     this.conflx = 0;	// Se houver conflito entre duas peças, qual coluna está a peça que deverá se mover
     this.confly = 0;	// Se continuar com conflito, qual linha está a peça que deverá se mover
-    this.promotion = null  // Se houver pawn promotion, para que peça se tranformará
+    this.promotion = null;	  // Se houver pawn promotion, para que peça se tranformará
 }
 
 // Função que transforma coluna em um inteiro onde (a, b, ..., h) = (1, 2, ..., 8)
@@ -530,15 +530,27 @@ function main(plays){
 	render();
 	
 	var t = true;
+	var move_list = new Array();
 
 	function render() {
 
-		// Ler evento de movimenTODO mouse
+		// Ler evento de movimento do mouse
 		var delta = clock.getDelta();
 		trackballControls.update(delta);
-		// TODO: Pop do movimento
-
-		// TODO: Atualizar argumento da posição
+		
+		// Pop do movimento
+		if(t){
+			// TODO: Atualizar argumento da posição
+			move_list; //Concatenar pecaW pecaB
+			t = false;
+		}
+		// Jogo começa depois de todas as peças carregadas
+		if(pieces.length == 32){
+			while(move_list.length){
+				move = move_list.pop();
+				console.log(move);
+			}
+		}
 
 
 		// render using requestAnimationFrame

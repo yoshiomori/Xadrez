@@ -376,6 +376,37 @@ function main(plays){
 
 	// add the output of the renderer to the html element
 	$("#WebGL-output").append(webGLRenderer.domElement);
+	
+	var controls = new function() {
+        this.perspective = "Perspective";
+        this.switchCamera = function() {
+            if (camera instanceof THREE.PerspectiveCamera) {
+                camera = new THREE.OrthographicCamera( window.innerWidth / - 32, window.innerWidth / 32, window.innerHeight / 32, window.innerHeight / - 32, -216, 516 );
+                camera.position.x = 3;
+                camera.position.y = 3;
+                camera.position.z = 2;
+                camera.lookAt(scene.position);
+                this.perspective = "Orthographic";
+            } else {
+                camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.x = -30;
+                camera.position.y = 40;
+                camera.position.z = 50;
+
+                camera.lookAt(scene.position);
+                this.perspective = "Perspective";
+            }
+            trackballControls = new THREE.TrackballControls(camera);
+            trackballControls.rotateSpeed = 1.0;
+        	trackballControls.zoomSpeed = 1.0;
+        	trackballControls.panSpeed = 1.0;
+        	trackballControls.staticMoving = true;
+        };
+    };
+
+    var gui = new dat.GUI();
+    gui.add(controls, 'switchCamera');
+    gui.add(controls, 'perspective').listen();
 
 	// call the render function
 	var step = 0;

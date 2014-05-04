@@ -1,0 +1,1 @@
+Para uma melhor organização de informações, foi gerado um arquivo pdf, LEIAME.pdf, contendo o necessário(e algumas informações extras) para a simulação do jogo.

@@ -323,7 +323,7 @@ function handleFileSelect(evt) {
 			// Quando todas as jogadas foram traduzidas para o vetor movs, 
 			// chamaremos a função que inicia a parte gráfica
 			main(movs);
-		}
+		};
 		reader.readAsText(f, "UTF-8");	
 	}
 }
@@ -377,17 +377,9 @@ function main(plays){
 	// add the output of the renderer to the html element
 	$("#WebGL-output").append(webGLRenderer.domElement);
 
-	// TODO: Dado o pgn variável string do arquvo .pgn carregado do html
-	// TODO: Criar uma fila{Classe da peça['b','n','p','q','k','r'], movx[int],movy[int], jogador['b'|'w'], "comeu"[bool], conflx[int], confly[int]}
-	// TODO: parser do pgn
-
-	// TODO: Criar Tabuleiro
-	// TODO: Carregar tabuleiro
-
-	// TODO: Criar peças do jogo (posição(int int), jogador,status) Funções(in(Classe da peça, movimento)out(peça))
-
 	// call the render function
 	var step = 0;
+	// Criar peças do jogo (posição(int int), jogador,status) Função(in(posição_da_peça)out(peça))
 	var pieces = new Array();
 	// Pega a peça do tipo type que está na posição positionx e positionz
 	pieces.get_piece = function(positionx, positionz){
@@ -403,6 +395,11 @@ function main(plays){
 		else if(!list.length) alert('Erro no arquivo pgn');
 		else alert('Erro inesperado.');
 		return;
+	};
+	pieces.removeFromScene = function(){
+		this.forEach(function(geometry){
+			scene.remove(geometry);
+		});
 	};
 	var type = {
 			'B':null,
@@ -478,7 +475,7 @@ function main(plays){
 		geometry.position.set(6,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
-		
+
 		// Arquivo e peças carregadas
 		bispo = true;
 	});
@@ -512,7 +509,7 @@ function main(plays){
 		geometry.position.set(10,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
-		
+
 		// Arquivo e peças carregadas
 		cavalo = true;
 	});
@@ -538,7 +535,7 @@ function main(plays){
 			pieces.push(geometry);
 			scene.add(geometry);
 		}
-		
+
 		// Arquivo e peças carregadas
 		peao = true;
 	});
@@ -562,7 +559,7 @@ function main(plays){
 		geometry.position.set(-2,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
-		
+
 		// Arquivo e peças carregadas
 		rainha = true;
 	});
@@ -586,7 +583,7 @@ function main(plays){
 		geometry.position.set(2,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
-		
+
 		// Arquivo e peças carregadas
 		rei = true;
 	});
@@ -620,7 +617,7 @@ function main(plays){
 		geometry.position.set(14,0,-14);
 		pieces.push(geometry);
 		scene.add(geometry);
-		
+
 		// Arquivo e peças carregadas
 		torre = true;
 	});
@@ -639,7 +636,6 @@ function main(plays){
 		x = - 14 + 4 * (x - 1);
 		z = 14 - 4 * (z - 1);
 		this.object = object;
-		this.object.position
 		this.dx = (x - object.position.x)/60; // Velocidade(dx,dy,dz)
 		this.dy = 8/60;
 		this.dz = (z - object.position.z)/60;
@@ -658,15 +654,15 @@ function main(plays){
 				}
 				break;
 			case 1:
-				var modx = x - this.object.position.x;
-				var modz = z - this.object.position.z;
+				var modx = this.x - this.object.position.x;
+				var modz = this.z - this.object.position.z;
 				if(modx < 0) modx *= -1;
 				if(modz < 0) modz *= -1;
 				this.object.position.x += this.dx;
 				this.object.position.z += this.dz;
 				if(modx < 0.000000001 && modz < 0.000000001) {
-					this.object.position.x = x;
-					this.object.position.z = z;
+					this.object.position.x = this.x;
+					this.object.position.z = this.z;
 					this.stage++;
 				}
 				break;
@@ -700,83 +696,262 @@ function main(plays){
 			item.move();
 		});
 	};
-	
-	
+
+
 	var pecasW = [];
 	var pecasB = [];
 	pecasW = iniciaPecas('W');
 	pecasB = iniciaPecas('B');
 	var i = 0;
 	var move_list = new Array();
+	// state = 0 significa solicitação de reset, state = 1 significa play, state = 2 significa pause e state = 3 significa solicitação de next step se estiver pausado e solicitação de pause e next step se estiver play.
+	// esc reseta, space troca de play para pause e vise versa e right arrow faz next step
+	var state = 1;
 	render();
-
+	
 	function render() {
-		// Jogo começa depois de todas as peças carregadas
-		if(bispo && torre && cavalo && peao && rainha && rei){
+		//Leitura do teclado
+		document.onkeydown = function(ev){ state = keydown(ev, state); };
 
 		// Ler evento de movimento do mouse
 		var delta = clock.getDelta();
 		trackballControls.update(delta);
 
-		if(motion_list.done()){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
-			if(i < plays.length){
-				if(plays[i].jogador == 'W'){
-					pecasW = mover(pecasW, plays[i]);
-					pecasB = kill(pecasB, plays[i]);
+		// Jogo começa depois de todas as peças carregadas
+		if(bispo && torre && cavalo && peao && rainha && rei){
+			if(state == 1 || state == 3){
+				if(motion_list.done()){ // Verificando se as peças jã se movimentaram, para pegar a proxima jogada.
+					if(i < plays.length){
+						if(plays[i].jogador == 'W'){
+							pecasW = mover(pecasW, plays[i]);
+							pecasB = kill(pecasB, plays[i]);
+						}
+						else{
+							pecasW = kill(pecasW, plays[i]);
+							pecasB = mover(pecasB, plays[i]);
+						}
+						move_list = pecasW.concat(pecasB);
+						i++;
+					}
+					// Atualizar argumento da posição
+					//move_list = move_list.filter(function(item, index, array){
+					//	return (item.mod);
+					//});
 				}
-				else{
-					pecasW = kill(pecasW, plays[i]);
-					pecasB = mover(pecasB, plays[i]);
+				// Percorre a lista de movimentos fazendo as configurações correspondentes
+				while(move_list.length){
+					// Pega a peça que se movimentou
+					move = move_list.pop();
+					move.px_init = parseInt(move.px_init);
+					move.py_init = parseInt(move.py_init);
+					move.px_fim = parseInt(move.px_fim);
+					move.py_fim = parseInt(move.py_fim);
+					move.mod = false;
+					// Pega a imagem correspondente à peça
+					object = pieces.get_piece(move.px_init, move.py_init);
+					// Caso Peça se Moveu
+					if(move.px_init != move.px_fim || move.py_init != move.py_fim){
+						motion = new Motion(object, move.px_fim, move.py_fim);
+						motion.stage = 0;
+						motion_list.push(motion);
+					}
+					// Caso Peça morreu
+					else if(move.morto){
+						scene.remove(object);
+						pieces.splice(pieces.indexOf(object),1);
+					}
+					// Caso Peça se transformou
+					else if(object.name != move.id) {
+						pieces.splice(pieces.indexOf(object),1);
+						scene.remove(object);
+						var geometry = type.nova_peça(move.id, move.jogador);
+						geometry.position.x = object.position.x;
+						geometry.position.z = object.position.z;
+						delete object;
+						object = geometry;
+						pieces.push(geometry);
+						scene.add(geometry);
+					}
 				}
-				move_list = pecasW.concat(pecasB);
-				i++;
+				if(state == 3){
+					motion_list.forEach(function(item, index, array){
+						item.object.position.x = item.x;
+						item.object.position.y = 0;
+						item.object.position.z = item.z;
+						item.stage = 4;
+					});
+					state = 2;
+				}
+				// Se o movimento não terminou continue o movimento
+				if(motion_list.done()) motion_list.length = 0;
+				else motion_list.move();
 			}
-			// Atualizar argumento da posição
-			//move_list = move_list.filter(function(item, index, array){
-			//	return (item.mod);
-			//});
-		}
-			// Percorre a lista de movimentos fazendo as configurações correspondentes
-			while(move_list.length){
-				// Pega a peça que se movimentou
-				move = move_list.pop();
-				move.px_init = parseInt(move.px_init);
-				move.py_init = parseInt(move.py_init);
-				move.px_fim = parseInt(move.px_fim);
-				move.py_fim = parseInt(move.py_fim);
-				move.mod = false;
-				// Pega a imagem correspondente à peça
-				object = pieces.get_piece(move.px_init, move.py_init);
-				// Caso Peça se Moveu
-				if(move.px_init != move.px_fim || move.py_init != move.py_fim){
-					motion = new Motion(object, move.px_fim, move.py_fim);
-					motion.stage = 0;
-					motion_list.push(motion);
-				}
-				// Caso Peça morreu
-				else if(move.morto){
-					scene.remove(object);
-					pieces.splice(pieces.indexOf(object),1);
-				}
-				// Caso Peça se transformou
-				else if(object.name != move.id) {
-					pieces.splice(pieces.indexOf(object),1);
-					scene.remove(object);
-					var geometry = type.nova_peça(move.id, move.jogador);
-					geometry.position.x = object.position.x;
-					geometry.position.z = object.position.z;
-					delete object;
-					object = geometry;
+			else if(state == 0){
+				pecasW.length = 0;
+				pecasB.length = 0;
+				move_list.length = 0;
+				pieces.removeFromScene();
+				pieces.length = 0;
+				motion_list.length = 0;
+				pecasW = iniciaPecas('W');
+				pecasB = iniciaPecas('B');
+				i = 0;
+				state = 1;
+				
+				// Carrega Bispo
+				// Jogador Branco
+				// Peça 1
+				geometry = type.nova_peça('B', 'W');
+				geometry.position.set(-6,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				// Peça 2
+				geometry = type.nova_peça('B', 'W');
+				geometry.position.set(6,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+
+				// Jogador Preto
+				// Peça 1
+				geometry = type.nova_peça('B', 'B');
+				geometry.position.set(-6,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				// Peça 2
+				geometry = type.nova_peça('B', 'B');
+				geometry.position.set(6,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				
+				
+				// Carrega o Cavalo
+				// Jogador Branco
+				// Peça 1
+				geometry = type.nova_peça('N', 'W');
+				geometry.position.set(-10,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				// Peça 2
+				geometry = type.nova_peça('N', 'W');
+				geometry.position.set(10,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+
+				// Jogador Preto
+				// Peça 1
+				geometry = type.nova_peça('N', 'B');
+				geometry.position.set(-10,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				// Peça 2
+				geometry = type.nova_peça('N', 'B');
+				geometry.position.set(10,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				
+				
+				// Carregando o peão
+				// Jogador Branco
+				for(var j = 0; j < 8; j++){
+					geometry = type.nova_peça('P', 'W');
+					geometry.position.set(-14 + j*4, 0, 10);
 					pieces.push(geometry);
 					scene.add(geometry);
 				}
+
+				// Jogador Preto
+				for(var j = 0; j < 8; j++){
+					geometry = type.nova_peça('P', 'B');
+					geometry.position.set(-14 + j*4, 0, -10);
+					pieces.push(geometry);
+					scene.add(geometry);
+				}
+				
+				
+				// Carregando a rainha
+				// Jogador Branco
+				geometry = type.nova_peça('Q', 'W');
+				geometry.scale.set(5, 5, 5);
+				geometry.position.set(-2,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+
+				// Jogador preto
+				geometry = type.nova_peça('Q', 'B');
+				geometry.scale.set(5, 5, 5);
+				geometry.position.set(-2,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				
+				
+				
+				// Carregando o rei
+				// Jogador Branco
+				geometry = type.nova_peça('K', 'W');
+				geometry.scale.set(5, 5, 5);
+				geometry.position.set(2,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+
+				// Jogador preto
+				geometry = type.nova_peça('K', 'B');
+				geometry.scale.set(5, 5, 5);
+				geometry.position.set(2,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				
+				
+				// Carregando a torre
+				// Jogador Branco
+				// Peça 1
+				geometry = type.nova_peça('R', 'W');
+				geometry.position.set(-14,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				// Peça 2
+				geometry = type.nova_peça('R', 'W');
+				geometry.position.set(14,0,14);
+				pieces.push(geometry);
+				scene.add(geometry);
+
+				// Jogador Preto
+				// Peça 1
+				geometry = type.nova_peça('R', 'B');
+				geometry.position.set(-14,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
+				// Peça 2
+				geometry = type.nova_peça('R', 'B');
+				geometry.position.set(14,0,-14);
+				pieces.push(geometry);
+				scene.add(geometry);
 			}
-			// Se o movimento não terminou continue o movimento
-			if(motion_list.done()) motion_list.length = 0;
-			else motion_list.move();
 		}
+		
 		// render using requestAnimationFrame
 		requestAnimationFrame(render);
 		webGLRenderer.render(scene, camera);
 	}
 }
+
+function keydown(ev, state) {
+	switch (ev.keyCode){
+	case 27: // esc keyCode
+		state = 0;
+		break;
+	case 32: // space keyCode
+		switch (state){
+		case 1: // Se play
+			state = 2; // então pause
+			break;
+		case 2: // Se pause
+			state = 1; // então play
+			break;
+		}
+		break;
+	case 39: // right arrow keyCode
+		state = 3;
+		break;
+	}
+	return state;
+};
